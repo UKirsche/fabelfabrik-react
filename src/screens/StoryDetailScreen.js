@@ -9,7 +9,7 @@ export default function StoryDetailScreen({ route }) {
     const [story, setStory] = useState(null);
 
     useEffect(() => {
-        fetch(`${API_URL}/${id}`)
+        fetch(`${API_BASE_URL}/${id}`)
             .then((res) => res.json())
             .then((data) => setStory(data));
     }, [id]);

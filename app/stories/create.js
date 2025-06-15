@@ -14,14 +14,13 @@ export default function StoryCreateScreen() {
             Alert.alert('Bitte Titel und Inhalt angeben!');
             return;
         }
-        Å
         setSaving(true);
         try {
             const response = await fetch(`${API_BASE_URL}/stories`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, content }),
-            });
+                });
             if (response.ok) {
                 setTitle('');
                 setContent('');
