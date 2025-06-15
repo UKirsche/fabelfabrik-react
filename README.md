@@ -35,6 +35,59 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Initialize Gradle
+
+If you need to build the Android app with Gradle, you can initialize Gradle for the project by running:
+
+```bash
+npm run init-gradle
+```
+
+This command will:
+1. Generate the native Android project with Gradle configuration
+2. Create the Android directory with all necessary Gradle files
+3. Configure the project for building with Gradle
+
+After initializing Gradle, you can:
+- Run `cd android && ./gradlew tasks` to see available Gradle tasks
+- Run `npm run build:android` to build the Android app using EAS
+- Run `npm run android` to start the app in development mode
+
+## Run Configurations
+
+This project includes run configurations for both Visual Studio Code and JetBrains IDEs (like WebStorm or IntelliJ IDEA). These configurations allow you to run various scripts directly from your IDE.
+
+### Visual Studio Code
+
+To use the run configurations in VS Code:
+
+1. Open the project in VS Code
+2. Go to the "Run and Debug" panel (Ctrl+Shift+D or Cmd+Shift+D)
+3. Select a configuration from the dropdown menu at the top
+4. Click the green play button or press F5 to run the selected configuration
+
+Available configurations:
+- Start Expo: Starts the Expo development server
+- Start Android: Starts the app on Android
+- Start iOS: Starts the app on iOS
+- Start Web: Starts the app on web
+- Build Android: Builds the Android app using EAS
+- Build iOS: Builds the iOS app using EAS
+- Build Preview: Builds with preview profile
+- Build Development: Builds with development profile
+- Initialize Gradle: Initializes Gradle for the project
+
+### JetBrains IDEs
+
+To use the run configurations in JetBrains IDEs:
+
+1. Open the project in your IDE
+2. Click on the "Run" menu
+3. Select "Run..." or use the dropdown in the toolbar
+4. Select a configuration from the list
+
+The same configurations are available as in VS Code.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
