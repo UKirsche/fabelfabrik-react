@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Button, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL, IMAGES_BASE_URL } from '../config';
 
 export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
@@ -20,6 +20,7 @@ export default function StoryListScreen() {
                     console.log(`📖 Story ${index + 1}:`);
                     console.log(`   ID: ${story.id || story._id}`);
                     console.log(`   Title: "${story.title}"`);
+                    console.log(`   Image: "${story.coverImageUrl}"`);
                     console.log(`   Content: "${story.content?.substring(0, 50)}..."`);
                     console.log(`   Content Length: ${story.content?.length || 0} characters`);
                 });
@@ -49,9 +50,25 @@ export default function StoryListScreen() {
                             padding: 12,
                             borderWidth: 1,
                             borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                         }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
-                        <Text numberOfLines={2}>{item.content}</Text>
+                        {item.coverImageUrl && (
+                            <Image
+                                source={{ uri: `${IMAGES_BASE_URL}/${item.coverImageUrl}` }}
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 8,
+                                    marginRight: 12,
+                                }}
+                                resizeMode="cover"
+                            />
+                        )}
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
+                            <Text numberOfLines={2}>{item.content}</Text>
+                        </View>
                     </TouchableOpacity>
                 )}
             />

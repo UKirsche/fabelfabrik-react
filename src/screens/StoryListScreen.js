@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Button, TouchableOpacity } from 'react-native';
-import { API_BASE_URL } from '../../config';
+import { View, Text, FlatList, Button, TouchableOpacity, Image } from 'react-native';
+import { API_BASE_URL, IMAGES_BASE_URL } from '../../config';
 
 export default function StoryListScreen({ navigation }) {
     const [stories, setStories] = useState([]);
@@ -25,9 +25,30 @@ export default function StoryListScreen({ navigation }) {
                             padding: 12,
                             borderWidth: 1,
                             borderRadius: 8,
+                            flexDirection: 'row',
+                            alignItems: 'center',
                         }}>
-                        <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
-                        <Text numberOfLines={2}>{item.content}</Text>
+                        {item.coverImageUrl && (
+                            <Image
+                                source={{ uri: `${IMAGES_BASE_URL}/${item.coverImageUrl}` }}
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    borderRadius: 8,
+                                    marginRight: 12,
+                                }}
+                                resizeMode="cover"
+                            />
+                        )}
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
+                            <Text numberOfLines={2}>{item.description || item.content}</Text>
+                            {item.pageCount && (
+                                <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                                    {item.pageCount} Seiten
+                                </Text>
+                            )}
+                        </View>
                     </TouchableOpacity>
                 )}
             />
