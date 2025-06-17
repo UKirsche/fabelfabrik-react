@@ -67,7 +67,7 @@ export default function StoryListScreen() {
                         )}
                         <View style={{ flex: 1 }}>
                             <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
-                            <Text numberOfLines={2}>{item.content}</Text>
+                            <Text numberOfLines={2}>{item.description}</Text>
                         </View>
                     </TouchableOpacity>
                 )}

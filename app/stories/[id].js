@@ -98,49 +98,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#007AFF',
         borderRadius: 2,
     },
-    // TTS Container Styles
-    ttsContainer: {
-        backgroundColor: '#e8f4fd',
-        borderRadius: 8,
-        padding: 12,
-        marginVertical: 16,
-    },
-    ttsTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#007AFF',
-    },
-    ttsControls: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    ttsButton: {
-        backgroundColor: '#007AFF',
-        borderRadius: 24,
-        width: 48,
-        height: 48,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 10,
-    },
-    ttsStopButton: {
-        backgroundColor: '#FF3B30',
-        borderRadius: 24,
-        width: 48,
-        height: 48,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    ttsInfo: {
-        flex: 1,
-        marginLeft: 10,
-    },
-    ttsStatus: {
-        fontSize: 14,
-        color: '#666',
-    },
+
     // Video Styles
     videoContainer: {
         backgroundColor: '#f0f0f0',
@@ -217,11 +175,6 @@ export default function StoryDetailScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [imageModalVisible, setImageModalVisible] = useState(false);
-
-    // TTS States
-    const [isSpeaking, setIsSpeaking] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
-
     const progressIntervalRef = useRef(null);
 
     useEffect(() => {
@@ -257,67 +210,6 @@ export default function StoryDetailScreen() {
 
     const closeImageModal = () => {
         setImageModalVisible(false);
-    };
-
-    // TTS Functions
-    const startSpeech = async () => {
-        if (!story.content) return;
-
-        try {
-            // Stop any currently playing speech
-            await Speech.stop();
-
-            const options = {
-                language: 'de-DE', // Deutsch
-                pitch: 1.0,
-                rate: 0.8, // Etwas langsamer für bessere Verständlichkeit
-                onStart: () => {
-                    setIsSpeaking(true);
-                    setIsPaused(false);
-                },
-                onDone: () => {
-                    setIsSpeaking(false);
-                    setIsPaused(false);
-                },
-                onStopped: () => {
-                    setIsSpeaking(false);
-                    setIsPaused(false);
-                },
-                onError: (error) => {
-                    console.error('TTS Error:', error);
-                    setIsSpeaking(false);
-                    setIsPaused(false);
-                }
-            };
-
-            await Speech.speak(story.content, options);
-        } catch (error) {
-            console.error('Speech error:', error);
-            setIsSpeaking(false);
-            setIsPaused(false);
-        }
-    };
-
-    const pauseSpeech = async () => {
-        try {
-            // Note: expo-speech doesn't have a native pause function
-            // We need to stop and remember the position manually
-            await Speech.stop();
-            setIsPaused(true);
-            setIsSpeaking(false);
-        } catch (error) {
-            console.error('Pause speech error:', error);
-        }
-    };
-
-    const stopSpeech = async () => {
-        try {
-            await Speech.stop();
-            setIsSpeaking(false);
-            setIsPaused(false);
-        } catch (error) {
-            console.error('Stop speech error:', error);
-        }
     };
 
     const loadSound = async () => {
@@ -445,46 +337,6 @@ export default function StoryDetailScreen() {
                     )}
                 </View>
             </View>
-
-            <Text style={styles.content}>{story.content}</Text>
-
-            {/* TTS Container - only show if content exists */}
-            {story.content && (
-                <View style={styles.ttsContainer}>
-                    <Text style={styles.ttsTitle}>Text vorlesen</Text>
-                    <View style={styles.ttsControls}>
-                        <TouchableOpacity 
-                            style={styles.ttsButton}
-                            onPress={isSpeaking ? pauseSpeech : startSpeech}
-                        >
-                            <Ionicons 
-                                name={isSpeaking ? "pause" : "play"} 
-                                size={24} 
-                                color="white" 
-                            />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity 
-                            style={styles.ttsStopButton}
-                            onPress={stopSpeech}
-                        >
-                            <Ionicons 
-                                name="stop" 
-                                size={24} 
-                                color="white" 
-                            />
-                        </TouchableOpacity>
-
-                        <View style={styles.ttsInfo}>
-                            <Text style={styles.ttsStatus}>
-                                {isSpeaking ? "Wird vorgelesen..." : 
-                                 isPaused ? "Pausiert" : "Bereit zum Vorlesen"}
-                            </Text>
-                        </View>
-                    </View>
-                </View>
-            )}
-
             {story.audioUrl && (
                 <View style={styles.audioContainer}>
                     <Text style={styles.audioTitle}>Audio</Text>

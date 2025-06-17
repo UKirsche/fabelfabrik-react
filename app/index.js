@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 
@@ -8,6 +8,11 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
+            <Image 
+                source={require('../assets/images/logo_fabel_fabrik.png')}
+                style={styles.logo}
+                resizeMode="contain"
+            />
             <Text style={styles.title}>Willkommen bei Fabelfabrik!</Text>
             <Text style={styles.subtitle}>Deine App ist bereit</Text>
 
@@ -30,6 +35,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
+    },
+    logo: {
+        width: 200,
+        height: 100,
+        marginBottom: 20,
     },
     title: {
         fontSize: 24,
