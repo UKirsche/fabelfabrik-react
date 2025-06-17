@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
-import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL } from '../../config';
+import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -141,6 +141,49 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
     },
+    // Video Styles
+    videoContainer: {
+        backgroundColor: '#f0f0f0',
+        borderRadius: 8,
+        padding: 12,
+        marginVertical: 16,
+    },
+    videoTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    videoButton: {
+        backgroundColor: '#007AFF',
+        padding: 10,
+        borderRadius: 8,
+    },
+    videoButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    // TTS File Styles
+    ttsFileContainer: {
+        backgroundColor: '#e8f4fd',
+        borderRadius: 8,
+        padding: 12,
+        marginVertical: 16,
+    },
+    ttsFileTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 8,
+        color: '#007AFF',
+    },
+    ttsFileButton: {
+        backgroundColor: '#007AFF',
+        padding: 10,
+        borderRadius: 8,
+    },
+    ttsFileButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
     // Modal Styles
     modalContainer: {
         flex: 1,
@@ -174,11 +217,11 @@ export default function StoryDetailScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [imageModalVisible, setImageModalVisible] = useState(false);
-    
+
     // TTS States
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-    
+
     const progressIntervalRef = useRef(null);
 
     useEffect(() => {
@@ -223,7 +266,7 @@ export default function StoryDetailScreen() {
         try {
             // Stop any currently playing speech
             await Speech.stop();
-            
+
             const options = {
                 language: 'de-DE', // Deutsch
                 pitch: 1.0,
@@ -386,12 +429,12 @@ export default function StoryDetailScreen() {
                         />
                     </TouchableOpacity>
                 )}
-                
+
                 <View style={styles.mediaContent}>
                     {story.description && (
                         <Text style={styles.description}>{story.description}</Text>
                     )}
-                    
+
                     {story.pdfUrl && (
                         <TouchableOpacity 
                             style={styles.pdfButton} 
@@ -478,6 +521,36 @@ export default function StoryDetailScreen() {
                 </View>
             )}
 
+            {/* Video Container - only show if videoUrl exists */}
+            {story.videoUrl && (
+                <View style={styles.videoContainer}>
+                    <Text style={styles.videoTitle}>Video</Text>
+                    <TouchableOpacity 
+                        style={styles.videoButton}
+                        onPress={() => Linking.openURL(`${VIDEO_BASE_URL}/${story.videoUrl}`)}
+                    >
+                        <Text style={styles.videoButtonText}>
+                            <Ionicons name="videocam-outline" size={16} color="white" /> Video abspielen
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {/* TTS File Container - only show if ttsUrl exists */}
+            {story.ttsUrl && (
+                <View style={styles.ttsFileContainer}>
+                    <Text style={styles.ttsFileTitle}>Vorlesen</Text>
+                    <TouchableOpacity 
+                        style={styles.ttsFileButton}
+                        onPress={() => Linking.openURL(`${AUDIO_BASE_URL}/${story.ttsUrl}`)}
+                    >
+                        <Text style={styles.ttsFileButtonText}>
+                            <Ionicons name="volume-high-outline" size={16} color="white" /> Vorlesen starten
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {story.images && story.images.length > 0 &&
                 story.images.map((img, i) => (
                     <Image key={i} source={{ uri: img }} style={{ width: '100%', height: 200, marginVertical: 8 }} />
@@ -498,7 +571,7 @@ export default function StoryDetailScreen() {
                     >
                         <Ionicons name="close" size={24} color="black" />
                     </TouchableOpacity>
-                    
+
                     <TouchableOpacity 
                         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
                         onPress={closeImageModal}
