@@ -452,7 +452,7 @@ export default function StoryDetailScreen() {
             </View>
             {story.audioUrl && (
                 <View style={styles.audioContainer}>
-                    <Text style={styles.audioTitle}>Audio</Text>
+                    <Text style={styles.audioTitle}>Hintergrundmusik</Text>
                     <View style={styles.audioControls}>
                         <TouchableOpacity 
                             style={styles.audioButton}
