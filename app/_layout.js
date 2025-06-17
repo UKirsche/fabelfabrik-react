@@ -22,7 +22,7 @@ export default function RootLayout() {
                     <Stack.Screen
                         name="index"
                         options={{
-                            title: 'Fabelfabrik Home',
+                            title: 'Fabelfabrik - Vorlesen und Erzählen!',
                             headerShown: true
                         }}
                     />

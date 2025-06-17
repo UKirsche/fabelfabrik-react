@@ -35,10 +35,10 @@ export default function StoryListScreen() {
 
     return (
         <View style={{ flex: 1, padding: 16 }}>
-            <Button 
-                title="Neue Geschichte" 
-                onPress={() => router.push('/stories/create')} 
-            />
+            {/*<Button */}
+            {/*    title="Neue Geschichte" */}
+            {/*    onPress={() => router.push('/stories/create')} */}
+            {/*/>*/}
             <FlatList
                 data={stories}
                 keyExtractor={(item) => item.id || item._id}

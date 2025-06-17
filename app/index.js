@@ -8,21 +8,22 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <Image 
-                source={require('../assets/images/logo_fabel_fabrik.png')}
-                style={styles.logo}
-                resizeMode="contain"
-            />
-            <Text style={styles.title}>Willkommen bei Fabelfabrik!</Text>
-            <Text style={styles.subtitle}>Deine App ist bereit</Text>
+            <View style={styles.topContent}>
+                <Text style={styles.title}>Willkommen bei Fabelfabrik!</Text>
+                <Text style={styles.subtitle}>Deine App ist bereit</Text>
+                <Image 
+                    source={require('../assets/images/fabelfabrik_logo.png')}
+                    style={styles.logo}
+                    resizeMode="contain"
+                />
 
+            </View>
             <TouchableOpacity
                 style={styles.button}
                 onPress={() => router.push('/stories')}
             >
-                <Text style={styles.buttonText}>Geschichten anzeigen</Text>
+                <Text style={styles.buttonText}>Los gehts</Text>
             </TouchableOpacity>
-
             <StatusBar style="auto" />
         </View>
     );
@@ -33,12 +34,16 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         padding: 20,
+        paddingTop: 80,
+    },
+    topContent: {
+        alignItems: 'center',
     },
     logo: {
-        width: 200,
-        height: 100,
+        width: 400,
+        height: 200,
         marginBottom: 20,
     },
     title: {
@@ -58,6 +63,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         paddingVertical: 15,
         borderRadius: 8,
+        marginBottom: 20,
     },
     buttonText: {
         color: 'white',
