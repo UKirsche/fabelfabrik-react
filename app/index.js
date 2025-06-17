@@ -9,7 +9,7 @@ export default function HomeScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.topContent}>
-                <Text style={styles.title}>Mit Fabelfabrik die Fantasie auf Reisen schicken!⁄</Text>
+                <Text style={styles.title}>Mit Fabelfabrik die Fantasie auf Reisen schicken!</Text>
                 <Text style={styles.subtitle}>Kleine Geschichten zum Einschlafen oder für Zwischendurch für Kinder - und Eltern.</Text>
                 <Image 
                     source={require('../assets/images/fabelfabrik_logo.png')}
