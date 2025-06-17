@@ -177,6 +177,13 @@ export default function StoryDetailScreen() {
     const [imageModalVisible, setImageModalVisible] = useState(false);
     const progressIntervalRef = useRef(null);
 
+    // TTS state variables
+    const [ttsSound, setTtsSound] = useState(null);
+    const [isTtsPlaying, setIsTtsPlaying] = useState(false);
+    const [isTtsLoading, setIsTtsLoading] = useState(false);
+    const [ttsProgress, setTtsProgress] = useState(0);
+    const ttsProgressIntervalRef = useRef(null);
+
     useEffect(() => {
         fetch(`${API_BASE_URL}/stories/${id}`)
             .then((res) => res.json())
@@ -191,6 +198,16 @@ export default function StoryDetailScreen() {
             if (progressIntervalRef.current) {
                 clearInterval(progressIntervalRef.current);
             }
+
+            // Clean up TTS sound
+            if (ttsSound) {
+                stopTtsSound();
+                ttsSound.unloadAsync();
+            }
+            if (ttsProgressIntervalRef.current) {
+                clearInterval(ttsProgressIntervalRef.current);
+            }
+
             // Stop TTS when component unmounts
             Speech.stop();
         };
@@ -307,6 +324,102 @@ export default function StoryDetailScreen() {
         }
     };
 
+    // TTS Functions
+    const loadTtsSound = async () => {
+        try {
+            setIsTtsLoading(true);
+            // Unload any existing TTS sound
+            if (ttsSound) {
+                await ttsSound.unloadAsync();
+            }
+
+            const { sound: newTtsSound } = await Audio.Sound.createAsync(
+                { uri: `${AUDIO_BASE_URL}/${story.ttsUrl}` },
+                { shouldPlay: false }
+            );
+
+            setTtsSound(newTtsSound);
+            setIsTtsLoading(false);
+
+            // Set up status update listener
+            newTtsSound.setOnPlaybackStatusUpdate((status) => {
+                if (status.isLoaded) {
+                    if (status.didJustFinish) {
+                        setIsTtsPlaying(false);
+                        setTtsProgress(0);
+                        clearInterval(ttsProgressIntervalRef.current);
+                        ttsProgressIntervalRef.current = null;
+                    }
+                }
+            });
+
+            return newTtsSound;
+        } catch (error) {
+            console.error('Error loading TTS sound:', error);
+            setIsTtsLoading(false);
+            return null;
+        }
+    };
+
+    const playTtsSound = async () => {
+        let currentTtsSound = ttsSound;
+        if (!currentTtsSound) {
+            currentTtsSound = await loadTtsSound();
+            if (!currentTtsSound) return;
+        }
+
+        try {
+            const status = await currentTtsSound.getStatusAsync();
+            if (status.isLoaded) {
+                await currentTtsSound.playAsync();
+                setIsTtsPlaying(true);
+
+                // Start tracking progress
+                if (ttsProgressIntervalRef.current) {
+                    clearInterval(ttsProgressIntervalRef.current);
+                }
+
+                ttsProgressIntervalRef.current = setInterval(async () => {
+                    const status = await currentTtsSound.getStatusAsync();
+                    if (status.isLoaded) {
+                        setTtsProgress(status.positionMillis / status.durationMillis);
+                    }
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error playing TTS sound:', error);
+        }
+    };
+
+    const pauseTtsSound = async () => {
+        if (ttsSound) {
+            await ttsSound.pauseAsync();
+            setIsTtsPlaying(false);
+            if (ttsProgressIntervalRef.current) {
+                clearInterval(ttsProgressIntervalRef.current);
+                ttsProgressIntervalRef.current = null;
+            }
+        }
+    };
+
+    const stopTtsSound = async () => {
+        if (ttsSound) {
+            await ttsSound.stopAsync();
+            setIsTtsPlaying(false);
+            setTtsProgress(0);
+            if (ttsProgressIntervalRef.current) {
+                clearInterval(ttsProgressIntervalRef.current);
+                ttsProgressIntervalRef.current = null;
+            }
+        }
+    };
+
+    const downloadTts = () => {
+        if (story.ttsUrl) {
+            Linking.openURL(`${AUDIO_BASE_URL}/${story.ttsUrl}`);
+        }
+    };
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>{story.title}</Text>
@@ -392,14 +505,36 @@ export default function StoryDetailScreen() {
             {story.ttsUrl && (
                 <View style={styles.ttsFileContainer}>
                     <Text style={styles.ttsFileTitle}>Vorlesen</Text>
-                    <TouchableOpacity 
-                        style={styles.ttsFileButton}
-                        onPress={() => Linking.openURL(`${AUDIO_BASE_URL}/${story.ttsUrl}`)}
-                    >
-                        <Text style={styles.ttsFileButtonText}>
-                            <Ionicons name="volume-high-outline" size={16} color="white" /> Vorlesen starten
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={styles.audioControls}>
+                        <TouchableOpacity 
+                            style={styles.audioButton}
+                            onPress={isTtsPlaying ? pauseTtsSound : playTtsSound}
+                            disabled={isTtsLoading}
+                        >
+                            {isTtsLoading ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Ionicons 
+                                    name={isTtsPlaying ? "pause" : "play"} 
+                                    size={24} 
+                                    color="white" 
+                                />
+                            )}
+                        </TouchableOpacity>
+
+                        <View style={styles.progressContainer}>
+                            <View style={[styles.progressBar, { width: `${ttsProgress * 100}%` }]} />
+                        </View>
+
+                        <TouchableOpacity 
+                            style={styles.downloadButton}
+                            onPress={downloadTts}
+                        >
+                            <Text style={styles.downloadButtonText}>
+                                <Ionicons name="download-outline" size={16} color="white" /> MP3
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             )}
 
