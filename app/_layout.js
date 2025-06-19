@@ -67,6 +67,13 @@ export default function RootLayout() {
                             headerShown: true
                         }}
                     />
+                    <Stack.Screen
+                        name="entwickler"
+                        options={{
+                            title: 'Entwickler',
+                            headerShown: true
+                        }}
+                    />
                 </Stack>
             </SafeAreaProvider>
         </GestureHandlerRootView>
