@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logo: {
-        width: 400,
-        height: 200,
+        width: 600,
+        height: 400,
         marginBottom: 20,
     },
     title: {
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     button: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#1d5264',
         paddingHorizontal: 30,
         paddingVertical: 15,
         borderRadius: 8,

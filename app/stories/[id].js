@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, Image, TouchableOpacity, Linking, StyleSheet, ActivityIndicator, Modal, Dimensions } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
         color: '#666',
     },
     pdfButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#1d5264',
         padding: 10,
         borderRadius: 8,
     },
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     audioButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#1d5264',
         borderRadius: 24,
         width: 48,
         height: 48,
@@ -77,7 +78,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     downloadButton: {
-        backgroundColor: '#34C759',
+        backgroundColor: '#970937',
         padding: 10,
         borderRadius: 8,
         marginLeft: 10,
@@ -122,7 +123,6 @@ const styles = StyleSheet.create({
     },
     // TTS File Styles
     ttsFileContainer: {
-        backgroundColor: '#e8f4fd',
         borderRadius: 8,
         padding: 12,
         marginVertical: 16,
@@ -130,8 +130,7 @@ const styles = StyleSheet.create({
     ttsFileTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 8,
-        color: '#007AFF',
+        marginBottom: 8
     },
     ttsFileButton: {
         backgroundColor: '#007AFF',
@@ -213,6 +212,26 @@ export default function StoryDetailScreen() {
         };
     }, [id]);
 
+    // Stop all audio playback when navigating away from the screen
+    useFocusEffect(
+        useCallback(() => {
+            // This runs when the screen comes into focus
+
+            // Return a cleanup function that runs when the screen goes out of focus
+            return () => {
+                // Stop main audio if playing
+                if (isPlaying && sound) {
+                    stopSound();
+                }
+
+                // Stop TTS audio if playing
+                if (isTtsPlaying && ttsSound) {
+                    stopTtsSound();
+                }
+            };
+        }, [isPlaying, isTtsPlaying, sound, ttsSound])
+    );
+
     if (!story) return <Text>Lädt...</Text>;
 
     const openPDF = () => {
@@ -266,6 +285,11 @@ export default function StoryDetailScreen() {
     };
 
     const playSound = async () => {
+        // Stop TTS sound if it's playing
+        if (isTtsPlaying) {
+            await stopTtsSound();
+        }
+
         let currentSound = sound;
         if (!currentSound) {
             currentSound = await loadSound();
@@ -362,6 +386,11 @@ export default function StoryDetailScreen() {
     };
 
     const playTtsSound = async () => {
+        // Stop main audio if it's playing
+        if (isPlaying) {
+            await stopSound();
+        }
+
         let currentTtsSound = ttsSound;
         if (!currentTtsSound) {
             currentTtsSound = await loadTtsSound();
@@ -445,14 +474,16 @@ export default function StoryDetailScreen() {
                             style={styles.pdfButton} 
                             onPress={openPDF}
                         >
-                            <Text style={styles.pdfButtonText}>PDF öffnen</Text>
+                            <Text style={styles.pdfButtonText}>
+                                <Ionicons name="document-text-outline" size={16} color="white" /> PDF öffnen
+                            </Text>
                         </TouchableOpacity>
                     )}
                 </View>
             </View>
             {story.audioUrl && (
                 <View style={styles.audioContainer}>
-                    <Text style={styles.audioTitle}>Hintergrundmusik</Text>
+                    <Text style={styles.audioTitle}>Titellied</Text>
                     <View style={styles.audioControls}>
                         <TouchableOpacity 
                             style={styles.audioButton}

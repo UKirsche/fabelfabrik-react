@@ -2,7 +2,8 @@
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import HamburgerMenu from '../components/HamburgerMenu';
 
 export default function RootLayout() {
     return (
@@ -11,12 +12,17 @@ export default function RootLayout() {
                 <Stack
                     screenOptions={{
                         headerStyle: {
-                            backgroundColor: '#ADD8E6',
+                            backgroundColor: '#1d5264',
                         },
                         headerTintColor: '#fff',
                         headerTitleStyle: {
                             fontWeight: 'bold',
                         },
+                        headerLeft: () => (
+                            <View style={{ marginLeft: 10 }}>
+                                <HamburgerMenu />
+                            </View>
+                        ),
                     }}
                 >
                     <Stack.Screen
@@ -44,6 +50,20 @@ export default function RootLayout() {
                         name="stories/create"
                         options={{
                             title: 'Neue Geschichte',
+                            headerShown: true
+                        }}
+                    />
+                    <Stack.Screen
+                        name="motivation"
+                        options={{
+                            title: 'Hintergrund und Motivation',
+                            headerShown: true
+                        }}
+                    />
+                    <Stack.Screen
+                        name="rechte_ki"
+                        options={{
+                            title: 'KI und Rechtliches',
                             headerShown: true
                         }}
                     />
