@@ -16,7 +16,7 @@ export default function RootLayout() {
                         headerTintColor: '#fff',
                         headerTitleStyle: {
                             fontWeight: 'bold',
-                            fontSize: 14,  // Reduziert die Header-Titel-Schriftgröße
+                            fontSize: 12,  // Reduziert die Header-Titel-Schriftgröße
                         },
                         headerLeft: () => (
                             <View style={styles.headerLeftContainer}>
@@ -37,7 +37,7 @@ export default function RootLayout() {
                     <Stack.Screen
                         name="index"
                         options={{
-                            title: 'Fabelfabrik - Vorlesen und Erzählen!',
+                            title: 'Vorlesen und Erzählen!',
                             headerShown: true
                         }}
                     />

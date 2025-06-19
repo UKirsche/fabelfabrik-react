@@ -8,9 +8,9 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 export default function HomeScreen() {
     const router = useRouter();
 
-    // Responsive dimensions
+    // Responsive dimensions - kleineres Logo für bessere Proportionen
     const isSmallScreen = screenWidth < 400;
-    const logoWidth = Math.min(screenWidth * 0.8, 400);
+    const logoWidth = Math.min(screenWidth * 0.6, 300);
     const logoHeight = logoWidth * 0.67; // Maintain aspect ratio
 
     return (
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: screenWidth < 400 ? 15 : 20,
-        paddingTop: screenHeight < 700 ? 60 : 80,
+        paddingTop: 20, // Deutlich reduziert von 50/70 auf 20
         paddingBottom: screenHeight < 700 ? 30 : 40,
     },
     topContent: {
@@ -65,30 +65,30 @@ const styles = StyleSheet.create({
     logo: {
         marginBottom: 20,
         maxWidth: '100%',
-        maxHeight: screenHeight * 0.4,
+        maxHeight: screenHeight * 0.3,
     },
     title: {
-        fontSize: screenWidth < 400 ? 20 : 24,
+        fontSize: screenWidth < 400 ? 18 : 22,
         fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center',
         paddingHorizontal: 10,
     },
     titleSmall: {
-        fontSize: 18,
-        lineHeight: 24,
+        fontSize: 16,
+        lineHeight: 22,
     },
     subtitle: {
-        fontSize: screenWidth < 400 ? 14 : 16,
+        fontSize: screenWidth < 400 ? 13 : 15,
         color: '#666',
-        marginBottom: 30,
+        marginBottom: screenWidth < 400 ? 20 : 25,
         textAlign: 'center',
         paddingHorizontal: 10,
     },
     subtitleSmall: {
-        fontSize: 13,
-        marginBottom: 20,
-        lineHeight: 18,
+        fontSize: 12,
+        marginBottom: 15,
+        lineHeight: 16,
     },
     button: {
         backgroundColor: '#1d5264',
