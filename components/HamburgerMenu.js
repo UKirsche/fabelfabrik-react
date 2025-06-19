@@ -26,6 +26,7 @@ export default function HamburgerMenu() {
         { title: 'Hintergrund und Motivation', path: '/motivation' },
         { title: 'KI und Rechtliches', path: '/rechte_ki' },
         { title: 'Entwickler', path: '/entwickler' },
+        { title: 'Impressum', path: '/impressum' },
     ];
 
     return (
