@@ -16,12 +16,12 @@
     "prebuild": "npx expo prebuild",
     "init-gradle": "node ./scripts/init-gradle.js",
     "build:web": "expo export:web",
+    "build": "expo export --platform web",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
-    "@expo/webpack-config": "^19.0.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.11",
