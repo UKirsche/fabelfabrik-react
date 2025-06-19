@@ -15,7 +15,7 @@
     "build:development": "eas build --profile development",
     "prebuild": "npx expo prebuild",
     "init-gradle": "node ./scripts/init-gradle.js",
-    "build": "react-scripts build",
+    "build:web": "expo export:web",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
