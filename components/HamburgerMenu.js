@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f8ff',
     },
     menuItemText: {
-        fontSize: 16,
+        fontSize: 12,
         color: '#333',
     },
     activeMenuItemText: {

@@ -1,8 +1,7 @@
-
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Image } from 'react-native';
 import HamburgerMenu from '../components/HamburgerMenu';
 
 export default function RootLayout() {
@@ -17,10 +16,20 @@ export default function RootLayout() {
                         headerTintColor: '#fff',
                         headerTitleStyle: {
                             fontWeight: 'bold',
+                            fontSize: 14,  // Reduziert die Header-Titel-Schriftgröße
                         },
                         headerLeft: () => (
-                            <View style={{ marginLeft: 10 }}>
+                            <View style={styles.headerLeftContainer}>
                                 <HamburgerMenu />
+                            </View>
+                        ),
+                        headerRight: () => (
+                            <View style={styles.headerRightContainer}>
+                                <Image 
+                                    source={require('../assets/images/fabelfabrik_logo_klein.png')}
+                                    style={styles.headerLogo}
+                                    resizeMode="contain"
+                                />
                             </View>
                         ),
                     }}
@@ -83,5 +92,20 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    headerLeftContainer: {
+        marginLeft: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerRightContainer: {
+        marginRight: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerLogo: {
+        width: 100,
+        height: 100,
+        marginRight: 10,
     },
 });
