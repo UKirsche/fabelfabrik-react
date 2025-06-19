@@ -8,37 +8,39 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 export default function HomeScreen() {
     const router = useRouter();
 
-    // Responsive dimensions - kleineres Logo für bessere Proportionen
-    const isSmallScreen = screenWidth < 400;
-    const logoWidth = Math.min(screenWidth * 0.6, 300);
-    const logoHeight = logoWidth * 0.67; // Maintain aspect ratio
+    // Logo nimmt fast die gesamte verfügbare Breite ein
+    const logoPadding = 10; // Kleines Padding
+    const logoWidth = screenWidth - (logoPadding * 2);
+    const logoHeight = (screenHeight - 200) / 2; // Hälfte der vorherigen Höhe
 
     return (
         <View style={styles.container}>
-            <View style={styles.topContent}>
-                <Text style={[styles.title, isSmallScreen && styles.titleSmall]}>
-                    Mit Fabelfabrik die Fantasie auf Reisen schicken!
-                </Text>
-                <Text style={[styles.subtitle, isSmallScreen && styles.subtitleSmall]}>
-                    Kleine Geschichten zum Einschlafen oder für Zwischendurch für Kinder - und Eltern.
-                </Text>
-                <Image 
+            <Text style={styles.title}>
+                Mit Fabelfabrik die Fantasie auf Reisen schicken!
+            </Text>
+            <Text style={styles.subtitle}>
+                Kleine Geschichten zum Einschlafen oder für Zwischendurch für Kinder - und Eltern.
+            </Text>
+
+            <View style={styles.logoContainer}>
+                <Image
                     source={require('../assets/images/fabelfabrik_logo.png')}
-                    style={[
-                        styles.logo,
-                        {
-                            width: logoWidth,
-                            height: logoHeight,
-                        }
-                    ]}
+                    style={{
+                        width: logoWidth,
+                        height: logoHeight,
+                    }}
                     resizeMode="contain"
                 />
             </View>
+
+            {/* Spacer für zusätzlichen Abstand */}
+            <View style={styles.spacer} />
+
             <TouchableOpacity
-                style={[styles.button, isSmallScreen && styles.buttonSmall]}
+                style={styles.button}
                 onPress={() => router.push('/stories')}
             >
-                <Text style={[styles.buttonText, isSmallScreen && styles.buttonTextSmall]}>
+                <Text style={styles.buttonText}>
                     Los gehts
                 </Text>
             </TouchableOpacity>
@@ -51,64 +53,45 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingHorizontal: 10,
+        paddingTop: 10,
+        paddingBottom: 20,
         alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: screenWidth < 400 ? 15 : 20,
-        paddingTop: 20, // Deutlich reduziert von 50/70 auf 20
-        paddingBottom: screenHeight < 700 ? 30 : 40,
-    },
-    topContent: {
-        alignItems: 'center',
-        flex: 1,
-        justifyContent: 'center',
-    },
-    logo: {
-        marginBottom: 20,
-        maxWidth: '100%',
-        maxHeight: screenHeight * 0.3,
     },
     title: {
-        fontSize: screenWidth < 400 ? 18 : 22,
+        fontSize: screenWidth < 400 ? 24 : 26,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginBottom: 8,
         textAlign: 'center',
-        paddingHorizontal: 10,
-    },
-    titleSmall: {
-        fontSize: 16,
-        lineHeight: 22,
+        paddingHorizontal: 5,
     },
     subtitle: {
-        fontSize: screenWidth < 400 ? 13 : 15,
+        fontSize: screenWidth < 400 ? 18 : 20,
         color: '#666',
-        marginBottom: screenWidth < 400 ? 20 : 25,
+        marginBottom: 10,
         textAlign: 'center',
-        paddingHorizontal: 10,
+        paddingHorizontal: 5,
     },
-    subtitleSmall: {
-        fontSize: 12,
-        marginBottom: 15,
-        lineHeight: 16,
+    logoContainer: {
+        flex: 0.8, // Hälfte des verfügbaren Platzes
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+    },
+    spacer: {
+        flex: 0.3, // Zusätzlicher Platz unter dem Logo
     },
     button: {
         backgroundColor: '#1d5264',
-        paddingHorizontal: screenWidth < 400 ? 25 : 30,
-        paddingVertical: screenWidth < 400 ? 12 : 15,
+        paddingHorizontal: 30,
+        paddingVertical: 15,
         borderRadius: 8,
         marginBottom: 20,
-        minWidth: 120,
-    },
-    buttonSmall: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
     },
     buttonText: {
         color: 'white',
-        fontSize: screenWidth < 400 ? 14 : 16,
+        fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
-    },
-    buttonTextSmall: {
-        fontSize: 14,
     },
 });
