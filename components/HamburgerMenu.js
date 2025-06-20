@@ -23,6 +23,7 @@ export default function HamburgerMenu() {
 
     const menuItems = [
         { title: 'Startseite', path: '/' },
+        { title: 'Geschichten', path: '/stories' },
         { title: 'Hintergrund und Motivation', path: '/motivation' },
         { title: 'KI und Rechtliches', path: '/rechte_ki' },
         { title: 'Entwickler', path: '/entwickler' },

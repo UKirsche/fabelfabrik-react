@@ -16,7 +16,7 @@ export default function HomeScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>
-                Mit Fabelfabrik die Fantasie auf Reisen schicken!
+               Die Fantasie auf Reisen schicken!
             </Text>
             <Text style={styles.subtitle}>
                 Kleine Geschichten zum Einschlafen oder für Zwischendurch für Kinder - und Eltern.
@@ -24,13 +24,19 @@ export default function HomeScreen() {
 
             <View style={styles.logoContainer}>
                 <Image
-                    source={require('../assets/images/fabelfabrik_logo.png')}
+                    source={require('../assets/images/fabelfabrik_logo_test.png')}
                     style={{
                         width: logoWidth,
                         height: logoHeight,
                     }}
                     resizeMode="contain"
                 />
+            </View>
+
+            <View style={styles.testnoteContainer}>
+                <Text style={styles.testnote}>
+                    Diese App befindet sich in einer frühen Testphase. Das Backend braucht manchmal einen Moment zum Hochfahren — bitte hab etwas Geduld. Wir freuen uns über Rückmeldungen von Eltern und Kindern! So können wir Fabelfabrik weiter verbessern.
+                </Text>
             </View>
 
             {/* Spacer für zusätzlichen Abstand */}
@@ -69,6 +75,7 @@ const styles = StyleSheet.create({
         fontSize: screenWidth < 400 ? 18 : 20,
         color: '#666',
         marginBottom: 10,
+        fontStyle: 'italic',
         textAlign: 'center',
         paddingHorizontal: 5,
     },
@@ -76,6 +83,7 @@ const styles = StyleSheet.create({
         flex: 0.8, // Hälfte des verfügbaren Platzes
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: screenHeight * 0.05, // 5% der Bildschirmhöhe
         width: '100%',
     },
     spacer: {
@@ -93,5 +101,18 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    testnoteContainer: {
+        backgroundColor: '#f0f0f0',  // Hellgrau
+        borderRadius: 12,
+        marginTop: screenHeight * 0.08, // 5% der Bildschirmhöhe
+        width: '90%',
+    },
+    testnote: {
+        fontSize: 16,
+        color: '#555',
+        textAlign: 'justify',
+        marginVertical: 20,
+        paddingHorizontal: 10,
     },
 });
