@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { useRouter } from 'expo-router';
+import {View, Text, StyleSheet, TouchableOpacity, Image, Dimensions} from 'react-native';
+import {StatusBar} from 'expo-status-bar';
+import {useRouter} from 'expo-router';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -16,10 +16,10 @@ export default function HomeScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>
-               Die Fantasie auf Reisen schicken!
+                Fantasie auf Reise
             </Text>
             <Text style={styles.subtitle}>
-                Kleine Geschichten für Kinder und Eltern
+                Geschichten für Kinder und Eltern
             </Text>
 
             <View style={styles.logoContainer}>
@@ -35,12 +35,13 @@ export default function HomeScreen() {
 
             <View style={styles.testnoteContainer}>
                 <Text style={styles.testnote}>
-                    <Text style={{ fontWeight: 'bold' }}>Hinweis:</Text> Diese App befindet sich in einer frühen Testphase. Das Backend braucht manchmal einen Moment zum Hochfahren.
+                    <Text style={{fontWeight: 'bold'}}>Hinweis:</Text> Diese App befindet sich in einer frühen
+                    Testphase. Das Backend braucht manchmal einen Moment zum Hochfahren.
                 </Text>
             </View>
 
             {/* Spacer für zusätzlichen Abstand */}
-            <View style={styles.spacer} />
+            <View style={styles.spacer}/>
 
             <TouchableOpacity
                 style={styles.button}
@@ -50,7 +51,7 @@ export default function HomeScreen() {
                     Los gehts
                 </Text>
             </TouchableOpacity>
-            <StatusBar style="auto" />
+            <StatusBar style="auto"/>
         </View>
     );
 }
