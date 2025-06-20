@@ -19,7 +19,7 @@ export default function HomeScreen() {
                Die Fantasie auf Reisen schicken!
             </Text>
             <Text style={styles.subtitle}>
-                Kleine Geschichten zum Einschlafen oder für Zwischendurch für Kinder - und Eltern.
+                Kleine Geschichten für Kinder und Eltern
             </Text>
 
             <View style={styles.logoContainer}>
@@ -35,7 +35,7 @@ export default function HomeScreen() {
 
             <View style={styles.testnoteContainer}>
                 <Text style={styles.testnote}>
-                    Diese App befindet sich in einer frühen Testphase. Das Backend braucht manchmal einen Moment zum Hochfahren — bitte hab etwas Geduld. Wir freuen uns über Rückmeldungen von Eltern und Kindern! So können wir Fabelfabrik weiter verbessern.
+                    <Text style={{ fontWeight: 'bold' }}>Hinweis:</Text> Diese App befindet sich in einer frühen Testphase. Das Backend braucht manchmal einen Moment zum Hochfahren.
                 </Text>
             </View>
 
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     testnote: {
         fontSize: 16,
         color: '#555',
-        textAlign: 'justify',
+        textAlign: 'center',
         marginVertical: 20,
         paddingHorizontal: 10,
     },
