@@ -1,10 +1,12 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
 import HamburgerMenu from '../components/HamburgerMenu';
 
+
 export default function RootLayout() {
+    const router = useRouter();
     return (
         <GestureHandlerRootView style={styles.container}>
             <SafeAreaProvider>
@@ -24,13 +26,17 @@ export default function RootLayout() {
                             </View>
                         ),
                         headerRight: () => (
-                            <View style={styles.headerRightContainer}>
+                            <TouchableOpacity 
+                                style={styles.headerRightContainer}
+                                onPress={() => router.push('/stories')}
+                                activeOpacity={0.7}
+                            >
                                 <Image 
                                     source={require('../assets/images/fabelfabrik_logo_klein.png')}
                                     style={styles.headerLogo}
                                     resizeMode="contain"
                                 />
-                            </View>
+                            </TouchableOpacity>
                         ),
                     }}
                 >
