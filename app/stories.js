@@ -47,7 +47,8 @@ export default function StoryListScreen() {
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#0000ff" />
                     <Text style={{ marginTop: 10, textAlign: 'center' }}>
-                        Der Server wacht auf… bitte einen Moment Geduld.
+                        Der Server wacht auf… bitte einen Moment Geduld.<br/>
+                        Die Bilder kommen verzögert nach dem Laden der Seite.
                     </Text>
                 </View>
             ) : (
