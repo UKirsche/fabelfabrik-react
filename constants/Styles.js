@@ -160,6 +160,11 @@ const layout = {
   spacer: {
     flex: 0.3,
   },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
 };
 
 // Menu specific styles
@@ -209,6 +214,10 @@ const image = {
     height: 60,
     borderRadius: 8,
     marginRight: 12,
+  },
+  favoriteIcon: {
+    padding: 8,
+    marginLeft: 5,
   },
 };
 
