@@ -7,6 +7,7 @@ import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
 import { Styles } from '../../constants/Styles';
+import { useRatingStore } from '../../store/ratingStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -20,6 +21,10 @@ export default function StoryDetailScreen() {
     const [imageModalVisible, setImageModalVisible] = useState(false);
     const progressIntervalRef = useRef(null);
 
+    // Rating state and functions
+    const { initialize: initializeRatings, getRating, setRating } = useRatingStore();
+    const [currentRating, setCurrentRating] = useState(0);
+
     // TTS state variables
     const [ttsSound, setTtsSound] = useState(null);
     const [isTtsPlaying, setIsTtsPlaying] = useState(false);
@@ -31,6 +36,15 @@ export default function StoryDetailScreen() {
         fetch(`${API_BASE_URL}/stories/${id}`)
             .then((res) => res.json())
             .then((data) => setStory(data));
+
+        // Initialize ratings and get current rating
+        const loadRatings = async () => {
+            await initializeRatings();
+            const rating = getRating(id);
+            setCurrentRating(rating);
+        };
+
+        loadRatings();
 
         // Cleanup function to unload sound when component unmounts
         return () => {
@@ -293,6 +307,33 @@ export default function StoryDetailScreen() {
         }
     };
 
+    // Handle rating change
+    const handleRating = (rating) => {
+        setCurrentRating(rating);
+        setRating(id, rating);
+    };
+
+    // Star Rating component
+    const StarRating = ({ rating, onRatingChange, size = 24, color = "#FFD700" }) => {
+        return (
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                        key={star}
+                        onPress={() => onRatingChange(star)}
+                        style={{ padding: 5 }}
+                    >
+                        <Ionicons
+                            name={rating >= star ? "star" : "star-outline"}
+                            size={size}
+                            color={color}
+                        />
+                    </TouchableOpacity>
+                ))}
+            </View>
+        );
+    };
+
     return (
         <ScrollView style={Styles.storyDetail.container}>
             <Text style={Styles.storyDetail.title}>{story.title}</Text>
@@ -418,6 +459,40 @@ export default function StoryDetailScreen() {
                     <Image key={i} source={{ uri: img }} style={{ width: '100%', height: 200, marginVertical: 8 }} />
                 ))
             }
+
+            {/* Rating Section */}
+            <View style={{
+                marginTop: 20,
+                marginBottom: 30,
+                padding: 15,
+                backgroundColor: '#f8f8f8',
+                borderRadius: 10,
+                alignItems: 'center'
+            }}>
+                <Text style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    marginBottom: 10,
+                    textAlign: 'center'
+                }}>
+                    Bewerte diese Geschichte
+                </Text>
+                <StarRating
+                    rating={currentRating}
+                    onRatingChange={handleRating}
+                    size={32}
+                />
+                <Text style={{
+                    marginTop: 10,
+                    fontSize: 14,
+                    color: '#666',
+                    textAlign: 'center'
+                }}>
+                    {currentRating > 0 
+                        ? `Deine Bewertung: ${currentRating} von 5 Sternen` 
+                        : 'Tippe auf die Sterne, um zu bewerten'}
+                </Text>
+            </View>
 
             {/* Image Modal */}
             <Modal
