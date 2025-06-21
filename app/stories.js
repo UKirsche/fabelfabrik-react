@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL, IMAGES_BASE_URL } from '../config';
+import { Styles } from '../constants/Styles';
+import { Colors } from '../constants/Colors';
 
 export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
@@ -38,15 +40,15 @@ export default function StoryListScreen() {
 
 
     return (
-        <View style={{ flex: 1, padding: 16 }}>
+        <View style={Styles.container.padded}>
             {/*<Button */}
             {/*    title="Neue Geschichte" */}
             {/*    onPress={() => router.push('/stories/create')} */}
             {/*/>*/}
             {loading ? (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                    <Text style={{ marginTop: 10, textAlign: 'center' }}>
+                <View style={Styles.container.centered}>
+                    <ActivityIndicator size="large" color={Colors.light.brand} />
+                    <Text style={Styles.text.loadingText}>
                         Der Server wacht auf… bitte einen Moment Geduld.{"\n"}
                         Die Bilder kommen verzögert nach dem Laden der Seite.
                     </Text>
@@ -58,29 +60,17 @@ export default function StoryListScreen() {
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             onPress={() => router.push(`/stories/${item.id || item._id}`)}
-                            style={{
-                                marginVertical: 8,
-                                padding: 12,
-                                borderWidth: 1,
-                                borderRadius: 8,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                            }}>
+                            style={Styles.container.storyItem}>
                             {item.coverImageUrl && (
                                 <Image
                                     source={{ uri: `${IMAGES_BASE_URL}/${item.coverImageUrl}` }}
-                                    style={{
-                                        width: 60,
-                                        height: 60,
-                                        borderRadius: 8,
-                                        marginRight: 12,
-                                    }}
+                                    style={Styles.image.storyImage}
                                     resizeMode="cover"
                                 />
                             )}
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{item.title}</Text>
-                                <Text numberOfLines={2}>{item.description}</Text>
+                            <View style={Styles.container.storyContent}>
+                                <Text style={Styles.text.storyTitle}>{item.title}</Text>
+                                <Text numberOfLines={2} style={Styles.text.storyDescription}>{item.description}</Text>
                             </View>
                         </TouchableOpacity>
                     )}

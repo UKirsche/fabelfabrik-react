@@ -1,170 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Linking, StyleSheet, ActivityIndicator, Modal, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
+import { Styles } from '../../constants/Styles';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    title: {
-        fontWeight: 'bold',
-        fontSize: 24,
-        marginBottom: 16,
-    },
-    mediaContainer: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    coverImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 8,
-        marginRight: 16,
-    },
-    mediaContent: {
-        flex: 1,
-        justifyContent: 'flex-start',
-    },
-    description: {
-        fontSize: 14,
-        marginBottom: 10,
-        color: '#666',
-    },
-    pdfButton: {
-        backgroundColor: '#1d5264',
-        padding: 10,
-        borderRadius: 8,
-    },
-    pdfButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    content: {
-        fontSize: 16,
-        lineHeight: 24,
-        marginBottom: 16,
-    },
-    audioContainer: {
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 12,
-        marginVertical: 16,
-    },
-    audioControls: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    audioTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    audioButton: {
-        backgroundColor: '#1d5264',
-        borderRadius: 24,
-        width: 48,
-        height: 48,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    downloadButton: {
-        backgroundColor: '#970937',
-        padding: 10,
-        borderRadius: 8,
-        marginLeft: 10,
-    },
-    downloadButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    progressContainer: {
-        flex: 1,
-        height: 4,
-        backgroundColor: '#ddd',
-        borderRadius: 2,
-        marginHorizontal: 10,
-    },
-    progressBar: {
-        height: '100%',
-        backgroundColor: '#007AFF',
-        borderRadius: 2,
-    },
-
-    // Video Styles
-    videoContainer: {
-        backgroundColor: '#f0f0f0',
-        borderRadius: 8,
-        padding: 12,
-        marginVertical: 16,
-    },
-    videoTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    videoButton: {
-        backgroundColor: '#007AFF',
-        padding: 10,
-        borderRadius: 8,
-    },
-    videoButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    // TTS File Styles
-    ttsFileContainer: {
-        borderRadius: 8,
-        padding: 12,
-        marginVertical: 16,
-    },
-    ttsFileTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 8
-    },
-    ttsFileButton: {
-        backgroundColor: '#007AFF',
-        padding: 10,
-        borderRadius: 8,
-    },
-    ttsFileButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    // Modal Styles
-    modalContainer: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalImage: {
-        width: screenWidth - 40,
-        height: screenHeight - 100,
-        resizeMode: 'contain',
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 50,
-        right: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        borderRadius: 20,
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
 
 export default function StoryDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -450,31 +294,31 @@ export default function StoryDetailScreen() {
     };
 
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.title}>{story.title}</Text>
+        <ScrollView style={Styles.storyDetail.container}>
+            <Text style={Styles.storyDetail.title}>{story.title}</Text>
 
-            <View style={styles.mediaContainer}>
+            <View style={Styles.storyDetail.mediaContainer}>
                 {story.coverImageUrl && (
                     <TouchableOpacity onPress={openImageModal}>
                         <Image
                             source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
-                            style={styles.coverImage}
+                            style={Styles.storyDetail.coverImage}
                             resizeMode="cover"
                         />
                     </TouchableOpacity>
                 )}
 
-                <View style={styles.mediaContent}>
+                <View style={Styles.storyDetail.mediaContent}>
                     {story.description && (
-                        <Text style={styles.description}>{story.description}</Text>
+                        <Text style={Styles.storyDetail.description}>{story.description}</Text>
                     )}
 
                     {story.pdfUrl && (
                         <TouchableOpacity 
-                            style={styles.pdfButton} 
+                            style={Styles.storyDetail.pdfButton} 
                             onPress={openPDF}
                         >
-                            <Text style={styles.pdfButtonText}>
+                            <Text style={Styles.storyDetail.pdfButtonText}>
                                 <Ionicons name="document-text-outline" size={16} color="white" /> PDF öffnen
                             </Text>
                         </TouchableOpacity>
@@ -482,11 +326,11 @@ export default function StoryDetailScreen() {
                 </View>
             </View>
             {story.audioUrl && (
-                <View style={styles.audioContainer}>
-                    <Text style={styles.audioTitle}>Titellied</Text>
-                    <View style={styles.audioControls}>
+                <View style={Styles.storyDetail.audioContainer}>
+                    <Text style={Styles.storyDetail.audioTitle}>Titellied</Text>
+                    <View style={Styles.storyDetail.audioControls}>
                         <TouchableOpacity 
-                            style={styles.audioButton}
+                            style={Styles.storyDetail.audioButton}
                             onPress={isPlaying ? pauseSound : playSound}
                             disabled={isLoading}
                         >
@@ -501,15 +345,15 @@ export default function StoryDetailScreen() {
                             )}
                         </TouchableOpacity>
 
-                        <View style={styles.progressContainer}>
-                            <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
+                        <View style={Styles.storyDetail.progressContainer}>
+                            <View style={[Styles.storyDetail.progressBar, { width: `${progress * 100}%` }]} />
                         </View>
 
                         <TouchableOpacity 
-                            style={styles.downloadButton}
+                            style={Styles.storyDetail.downloadButton}
                             onPress={downloadAudio}
                         >
-                            <Text style={styles.downloadButtonText}>
+                            <Text style={Styles.storyDetail.downloadButtonText}>
                                 <Ionicons name="download-outline" size={16} color="white" /> MP3
                             </Text>
                         </TouchableOpacity>
@@ -519,13 +363,13 @@ export default function StoryDetailScreen() {
 
             {/* Video Container - only show if videoUrl exists */}
             {story.videoUrl && (
-                <View style={styles.videoContainer}>
-                    <Text style={styles.videoTitle}>Video</Text>
+                <View style={Styles.storyDetail.videoContainer}>
+                    <Text style={Styles.storyDetail.videoTitle}>Video</Text>
                     <TouchableOpacity 
-                        style={styles.videoButton}
+                        style={Styles.storyDetail.videoButton}
                         onPress={() => Linking.openURL(`${VIDEO_BASE_URL}/${story.videoUrl}`)}
                     >
-                        <Text style={styles.videoButtonText}>
+                        <Text style={Styles.storyDetail.videoButtonText}>
                             <Ionicons name="videocam-outline" size={16} color="white" /> Video abspielen
                         </Text>
                     </TouchableOpacity>
@@ -534,11 +378,11 @@ export default function StoryDetailScreen() {
 
             {/* TTS File Container - only show if ttsUrl exists */}
             {story.ttsUrl && (
-                <View style={styles.ttsFileContainer}>
-                    <Text style={styles.ttsFileTitle}>Vorlesen</Text>
-                    <View style={styles.audioControls}>
+                <View style={Styles.storyDetail.ttsFileContainer}>
+                    <Text style={Styles.storyDetail.ttsFileTitle}>Vorlesen</Text>
+                    <View style={Styles.storyDetail.audioControls}>
                         <TouchableOpacity 
-                            style={styles.audioButton}
+                            style={Styles.storyDetail.audioButton}
                             onPress={isTtsPlaying ? pauseTtsSound : playTtsSound}
                             disabled={isTtsLoading}
                         >
@@ -553,15 +397,15 @@ export default function StoryDetailScreen() {
                             )}
                         </TouchableOpacity>
 
-                        <View style={styles.progressContainer}>
-                            <View style={[styles.progressBar, { width: `${ttsProgress * 100}%` }]} />
+                        <View style={Styles.storyDetail.progressContainer}>
+                            <View style={[Styles.storyDetail.progressBar, { width: `${ttsProgress * 100}%` }]} />
                         </View>
 
                         <TouchableOpacity 
-                            style={styles.downloadButton}
+                            style={Styles.storyDetail.downloadButton}
                             onPress={downloadTts}
                         >
-                            <Text style={styles.downloadButtonText}>
+                            <Text style={Styles.storyDetail.downloadButtonText}>
                                 <Ionicons name="download-outline" size={16} color="white" /> MP3
                             </Text>
                         </TouchableOpacity>
@@ -582,9 +426,9 @@ export default function StoryDetailScreen() {
                 animationType="fade"
                 onRequestClose={closeImageModal}
             >
-                <View style={styles.modalContainer}>
+                <View style={Styles.storyDetail.modalContainer}>
                     <TouchableOpacity 
-                        style={styles.closeButton}
+                        style={Styles.storyDetail.closeButton}
                         onPress={closeImageModal}
                     >
                         <Ionicons name="close" size={24} color="black" />
@@ -598,7 +442,7 @@ export default function StoryDetailScreen() {
                         {story.coverImageUrl && (
                             <Image
                                 source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
-                                style={styles.modalImage}
+                                style={Styles.storyDetail.modalImage}
                             />
                         )}
                     </TouchableOpacity>
