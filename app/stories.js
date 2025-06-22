@@ -4,12 +4,13 @@ import { useRouter } from 'expo-router';
 import { API_BASE_URL, IMAGES_BASE_URL } from '../config';
 import { Styles } from '../constants/Styles';
 import { Colors } from '../constants/Colors';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useFavoriteStore } from '../store/favoriteStore';
 
 export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [sortOrder, setSortOrder] = useState('desc'); // 'desc' for newest first, 'asc' for oldest first
     const router = useRouter();
 
     // Access favorite store
@@ -26,6 +27,31 @@ export default function StoryListScreen() {
     useEffect(() => {
         initialize();
     }, []);
+
+    // Function to sort stories based on current sort order
+    const sortStories = (data) => {
+        const dateField = 'createdAt';
+        return [...data].sort((a, b) => {
+            if (a[dateField] && b[dateField]) {
+                // Sort based on sortOrder state
+                const dateA = new Date(a[dateField]);
+                const dateB = new Date(b[dateField]);
+                return sortOrder === 'desc' 
+                    ? dateB - dateA  // Newest first
+                    : dateA - dateB; // Oldest first
+            }
+            // If no date field is found, maintain original order
+            return 0;
+        });
+    };
+
+    // Function to toggle sort order
+    const toggleSortOrder = () => {
+        const newSortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+        setSortOrder(newSortOrder);
+        // Re-sort the stories with the new sort order
+        setStories(sortStories(stories));
+    };
 
     useEffect(() => {
         console.log('🚀 Loading stories from:', API_BASE_URL);
@@ -47,20 +73,11 @@ export default function StoryListScreen() {
                     console.log(`   Full story object:`, JSON.stringify(story, null, 2));
                 });
 
-                // Sort stories by date (newest first)
-                // Das Feld vom Server heißt createdAt
+                // Sort stories based on current sort order
                 const dateField = 'createdAt';
                 console.log(`🔍 Using date field: ${dateField}`);
 
-                const sortedData = [...data].sort((a, b) => {
-                    if (a[dateField] && b[dateField]) {
-                        // Sort in descending order (newest first)
-                        return new Date(b[dateField]) - new Date(a[dateField]);
-                    }
-
-                    // If no date field is found, maintain original order
-                    return 0;
-                });
+                const sortedData = sortStories(data);
 
                 // Log the first few stories with their dates to verify sorting
                 console.log('📅 First few stories after sorting:');
@@ -85,13 +102,35 @@ export default function StoryListScreen() {
 
     return (
         <View style={Styles.container.padded}>
-            {/* Filter button */}
+            {/* Filter and Sort Controls */}
             <View style={Styles.layout.filterContainer}>
-                <Button
-                    title={showOnlyFavorites ? "Alle anzeigen" : "Nur Favoriten"}
-                    onPress={toggleShowOnlyFavorites}
-                    color={Colors.light.brand}
-                />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                    <Button
+                        title={showOnlyFavorites ? "Alle anzeigen" : "Nur Favoriten"}
+                        onPress={toggleShowOnlyFavorites}
+                        color={Colors.light.brand}
+                    />
+                    <TouchableOpacity 
+                        onPress={toggleSortOrder}
+                        style={{ 
+                            flexDirection: 'row', 
+                            alignItems: 'center', 
+                            backgroundColor: Colors.light.brand,
+                            paddingHorizontal: 12,
+                            paddingVertical: 6,
+                            borderRadius: 4
+                        }}
+                    >
+                        <Text style={{ color: 'white', marginRight: 5 }}>
+                            {sortOrder === 'desc' ? "Neueste zuerst" : "Älteste zuerst"}
+                        </Text>
+                        <MaterialIcons 
+                            name={sortOrder === 'desc' ? "arrow-downward" : "arrow-upward"} 
+                            size={16} 
+                            color="white" 
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {loading ? (
