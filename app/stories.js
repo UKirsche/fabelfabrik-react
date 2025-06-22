@@ -44,9 +44,31 @@ export default function StoryListScreen() {
                     console.log(`   Image: "${story.coverImageUrl}"`);
                     console.log(`   Content: "${story.content?.substring(0, 50)}..."`);
                     console.log(`   Content Length: ${story.content?.length || 0} characters`);
+                    console.log(`   Full story object:`, JSON.stringify(story, null, 2));
                 });
 
-                setStories(data);
+                // Sort stories by date (newest first)
+                // Das Feld vom Server heißt createdAt
+                const dateField = 'createdAt';
+                console.log(`🔍 Using date field: ${dateField}`);
+
+                const sortedData = [...data].sort((a, b) => {
+                    if (a[dateField] && b[dateField]) {
+                        // Sort in descending order (newest first)
+                        return new Date(b[dateField]) - new Date(a[dateField]);
+                    }
+
+                    // If no date field is found, maintain original order
+                    return 0;
+                });
+
+                // Log the first few stories with their dates to verify sorting
+                console.log('📅 First few stories after sorting:');
+                sortedData.slice(0, 3).forEach((story, index) => {
+                    console.log(`   Story ${index + 1}: "${story.title}" - Date: ${new Date(story[dateField]).toISOString()}`);
+                });
+
+                setStories(sortedData);
                 setLoading(false);
             })
             .catch(err => {

@@ -48,7 +48,8 @@ export const useRatingStore = create((set, get) => ({
 
     // Send rating to server
     try {
-      const response = await fetch(`${API_BASE_URL}/${storyId}/ratings`, {
+      console.log('Sending rating to server:', rating);
+      const response = await fetch(`${API_BASE_URL}/stories/${storyId}/ratings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
