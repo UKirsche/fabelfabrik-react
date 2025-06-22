@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config';
 
 const RATINGS_STORAGE_KEY = 'fabelfabrik_story_ratings';
 
@@ -41,9 +42,26 @@ export const useRatingStore = create((set, get) => ({
       ...ratings,
       [storyId]: rating
     };
-    
+
     set({ ratings: updatedRatings });
     await saveRatingsToStorage(updatedRatings);
+
+    // Send rating to server
+    try {
+      const response = await fetch(`${API_BASE_URL}/${storyId}/ratings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ rating }),
+      });
+
+      if (!response.ok) {
+        console.error('Error sending rating to server:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error sending rating to server:', error);
+    }
   },
 
   getRating: (storyId) => {
@@ -54,7 +72,7 @@ export const useRatingStore = create((set, get) => ({
     const { ratings } = get();
     const updatedRatings = { ...ratings };
     delete updatedRatings[storyId];
-    
+
     set({ ratings: updatedRatings });
     await saveRatingsToStorage(updatedRatings);
   },
