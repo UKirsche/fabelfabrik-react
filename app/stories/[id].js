@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
 import { Styles } from '../../constants/Styles';
 import { useRatingStore } from '../../store/ratingStore';
+import { useCacheStore } from '../../store/cacheStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -25,6 +26,15 @@ export default function StoryDetailScreen() {
     const { initialize: initializeRatings, getRating, setRating } = useRatingStore();
     const [currentRating, setCurrentRating] = useState(0);
 
+    // Cache state and functions
+    const { 
+        initialize: initializeCache, 
+        isStoryCached, 
+        getCachedStory, 
+        getCachedAssetPath 
+    } = useCacheStore();
+    const [isUsingCache, setIsUsingCache] = useState(false);
+
     // TTS state variables
     const [ttsSound, setTtsSound] = useState(null);
     const [isTtsPlaying, setIsTtsPlaying] = useState(false);
@@ -33,18 +43,36 @@ export default function StoryDetailScreen() {
     const ttsProgressIntervalRef = useRef(null);
 
     useEffect(() => {
-        fetch(`${API_BASE_URL}/stories/${id}`)
-            .then((res) => res.json())
-            .then((data) => setStory(data));
-
-        // Initialize ratings and get current rating
-        const loadRatings = async () => {
+        // Initialize cache and ratings
+        const initialize = async () => {
+            await initializeCache();
             await initializeRatings();
+
+            // Get rating
             const rating = getRating(id);
             setCurrentRating(rating);
+
+            // Check if story is cached
+            if (isStoryCached(id)) {
+                console.log('Loading story from cache');
+                const cachedStory = getCachedStory(id);
+                setStory(cachedStory);
+                setIsUsingCache(true);
+            } else {
+                console.log('Loading story from API');
+                // Fetch from API if not cached
+                try {
+                    const response = await fetch(`${API_BASE_URL}/stories/${id}`);
+                    const data = await response.json();
+                    setStory(data);
+                    setIsUsingCache(false);
+                } catch (error) {
+                    console.error('Error fetching story:', error);
+                }
+            }
         };
 
-        loadRatings();
+        initialize();
 
         // Cleanup function to unload sound when component unmounts
         return () => {
@@ -114,8 +142,23 @@ export default function StoryDetailScreen() {
                 await sound.unloadAsync();
             }
 
+            // Determine audio source (cached or remote)
+            let audioUri;
+            if (isUsingCache && story.audioUrl) {
+                const cachedAudioPath = getCachedAssetPath(id, 'audio');
+                if (cachedAudioPath) {
+                    console.log('Using cached audio:', cachedAudioPath);
+                    audioUri = cachedAudioPath;
+                } else {
+                    console.log('Cached audio not found, using remote audio');
+                    audioUri = `${AUDIO_BASE_URL}/${story.audioUrl}`;
+                }
+            } else {
+                audioUri = `${AUDIO_BASE_URL}/${story.audioUrl}`;
+            }
+
             const { sound: newSound } = await Audio.Sound.createAsync(
-                { uri: `${AUDIO_BASE_URL}/${story.audioUrl}` },
+                { uri: audioUri },
                 { shouldPlay: false }
             );
 
@@ -215,8 +258,23 @@ export default function StoryDetailScreen() {
                 await ttsSound.unloadAsync();
             }
 
+            // Determine TTS audio source (cached or remote)
+            let ttsUri;
+            if (isUsingCache && story.ttsUrl) {
+                const cachedTtsPath = getCachedAssetPath(id, 'tts');
+                if (cachedTtsPath) {
+                    console.log('Using cached TTS audio:', cachedTtsPath);
+                    ttsUri = cachedTtsPath;
+                } else {
+                    console.log('Cached TTS audio not found, using remote TTS audio');
+                    ttsUri = `${AUDIO_BASE_URL}/${story.ttsUrl}`;
+                }
+            } else {
+                ttsUri = `${AUDIO_BASE_URL}/${story.ttsUrl}`;
+            }
+
             const { sound: newTtsSound } = await Audio.Sound.createAsync(
-                { uri: `${AUDIO_BASE_URL}/${story.ttsUrl}` },
+                { uri: ttsUri },
                 { shouldPlay: false }
             );
 
@@ -342,7 +400,11 @@ export default function StoryDetailScreen() {
                 {story.coverImageUrl && (
                     <TouchableOpacity onPress={openImageModal}>
                         <Image
-                            source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
+                            source={{ 
+                                uri: isUsingCache && getCachedAssetPath(id, 'coverImage')
+                                    ? getCachedAssetPath(id, 'coverImage')
+                                    : `${IMAGES_BASE_URL}/${story.coverImageUrl}`
+                            }}
                             style={Styles.storyDetail.coverImage}
                             resizeMode="cover"
                         />
@@ -408,10 +470,19 @@ export default function StoryDetailScreen() {
                     <Text style={Styles.storyDetail.videoTitle}>Video</Text>
                     <TouchableOpacity 
                         style={Styles.storyDetail.videoButton}
-                        onPress={() => Linking.openURL(`${VIDEO_BASE_URL}/${story.videoUrl}`)}
+                        onPress={() => {
+                            // Use cached video if available, otherwise use remote URL
+                            const videoUri = isUsingCache && getCachedAssetPath(id, 'video')
+                                ? getCachedAssetPath(id, 'video')
+                                : `${VIDEO_BASE_URL}/${story.videoUrl}`;
+
+                            console.log('Opening video:', videoUri);
+                            Linking.openURL(videoUri);
+                        }}
                     >
                         <Text style={Styles.storyDetail.videoButtonText}>
                             <Ionicons name="videocam-outline" size={16} color="white" /> Video abspielen
+                            {isUsingCache && getCachedAssetPath(id, 'video') ? ' (Offline)' : ''}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -516,7 +587,11 @@ export default function StoryDetailScreen() {
                     >
                         {story.coverImageUrl && (
                             <Image
-                                source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
+                                source={{ 
+                                    uri: isUsingCache && getCachedAssetPath(id, 'coverImage')
+                                        ? getCachedAssetPath(id, 'coverImage')
+                                        : `${IMAGES_BASE_URL}/${story.coverImageUrl}`
+                                }}
                                 style={Styles.storyDetail.modalImage}
                             />
                         )}
