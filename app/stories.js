@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Button, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, Button } from 'react-native';
 import { useRouter } from 'expo-router';
 import { API_BASE_URL, IMAGES_BASE_URL } from '../config';
 import { Styles } from '../constants/Styles';
 import { Colors } from '../constants/Colors';
-import { AntDesign, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useFavoriteStore } from '../store/favoriteStore';
-import { useCacheStore } from '../store/cacheStore';
 
 export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
@@ -19,24 +18,14 @@ export default function StoryListScreen() {
         favorites, 
         isFavorite, 
         toggleFavorite, 
-        initialize: initializeFavorites, 
+        initialize, 
         showOnlyFavorites, 
         toggleShowOnlyFavorites 
     } = useFavoriteStore();
 
-    // Access cache store
-    const {
-        isStoryCached,
-        cacheStory,
-        removeFromCache,
-        initialize: initializeCache,
-        getAllCachedStories
-    } = useCacheStore();
-
-    // Initialize favorites and cache from storage
+    // Initialize favorites from storage
     useEffect(() => {
-        initializeFavorites();
-        initializeCache();
+        initialize();
     }, []);
 
     // Function to sort stories based on current sort order
@@ -101,20 +90,6 @@ export default function StoryListScreen() {
             })
             .catch(err => {
                 console.error('❌ Error loading stories:', err);
-
-                // If there's an error fetching from API, try to load cached stories
-                const cachedStories = getAllCachedStories();
-                console.log('📚 Loading cached stories:', cachedStories.length);
-
-                if (cachedStories.length > 0) {
-                    // Sort cached stories based on current sort order
-                    const sortedCachedStories = sortStories(cachedStories);
-                    setStories(sortedCachedStories);
-                    console.log('📚 Loaded cached stories successfully');
-                } else {
-                    console.log('❌ No cached stories found');
-                }
-
                 setLoading(false);
             });
     }, []);
@@ -196,73 +171,6 @@ export default function StoryListScreen() {
                                     name={isFavorite(item.id || item._id) ? "heart" : "hearto"}
                                     size={24}
                                     color={isFavorite(item.id || item._id) ? "red" : "gray"}
-                                />
-                            </TouchableOpacity>
-
-                            {/* Download icon */}
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    const storyId = item.id || item._id;
-                                    if (isStoryCached(storyId)) {
-                                        // If already cached, ask if user wants to remove from cache
-                                        Alert.alert(
-                                            "Geschichte entfernen",
-                                            "Möchtest du diese Geschichte aus dem Cache entfernen?",
-                                            [
-                                                {
-                                                    text: "Abbrechen",
-                                                    style: "cancel"
-                                                },
-                                                {
-                                                    text: "Entfernen",
-                                                    onPress: async () => {
-                                                        const success = await removeFromCache(storyId);
-                                                        if (success) {
-                                                            Alert.alert("Erfolg", "Die Geschichte wurde aus dem Cache entfernt.");
-                                                        } else {
-                                                            Alert.alert("Fehler", "Die Geschichte konnte nicht aus dem Cache entfernt werden.");
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        );
-                                    } else {
-                                        // If not cached, download and cache
-                                        Alert.alert(
-                                            "Geschichte herunterladen",
-                                            "Möchtest du diese Geschichte herunterladen?",
-                                            [
-                                                {
-                                                    text: "Abbrechen",
-                                                    style: "cancel"
-                                                },
-                                                {
-                                                    text: "Herunterladen",
-                                                    onPress: async () => {
-                                                        const success = await cacheStory(item);
-                                                        if (success) {
-                                                            Alert.alert("Erfolg", "Die Geschichte wurde erfolgreich heruntergeladen.");
-                                                        } else {
-                                                            Alert.alert("Fehler", "Die Geschichte konnte nicht heruntergeladen werden.");
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        );
-                                    }
-                                }}
-                                style={{
-                                    position: 'absolute',
-                                    right: 10,
-                                    bottom: 10,
-                                    backgroundColor: 'white',
-                                    borderRadius: 15,
-                                    padding: 5
-                                }}>
-                                <Ionicons
-                                    name={isStoryCached(item.id || item._id) ? "cloud-done" : "cloud-download-outline"}
-                                    size={24}
-                                    color={isStoryCached(item.id || item._id) ? Colors.light.brand : "gray"}
                                 />
                             </TouchableOpacity>
                         </View>
