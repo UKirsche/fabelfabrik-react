@@ -70,21 +70,71 @@ export default function StoryDetailScreen() {
         };
     }, [id]);
 
-    // Stop all audio playback when navigating away from the screen
     useFocusEffect(
         useCallback(() => {
-            // This runs when the screen comes into focus
+            // Wenn die Seite Fokus bekommt, Progress-Tracking wieder starten falls Audio läuft
+            console.log('Focus gained - checking audio states');
 
-            // Return a cleanup function that runs when the screen goes out of focus
+            // Progress-Tracking für main audio wieder starten falls es läuft
+            if (isPlaying && sound && !progressIntervalRef.current) {
+                console.log('Restarting main audio progress tracking');
+                progressIntervalRef.current = setInterval(async () => {
+                    try {
+                        const status = await sound.getStatusAsync();
+                        if (status.isLoaded && status.isPlaying) {
+                            setProgress(status.positionMillis / status.durationMillis);
+                        }
+                    } catch (error) {
+                        console.error('Error getting playback status:', error);
+                    }
+                }, 500);
+            }
+
+            // Progress-Tracking für TTS audio wieder starten falls es läuft
+            if (isTtsPlaying && ttsSound && !ttsProgressIntervalRef.current) {
+                console.log('Restarting TTS progress tracking');
+                ttsProgressIntervalRef.current = setInterval(async () => {
+                    try {
+                        const status = await ttsSound.getStatusAsync();
+                        if (status.isLoaded && status.isPlaying) {
+                            setTtsProgress(status.positionMillis / status.durationMillis);
+                        }
+                    } catch (error) {
+                        console.error('Error getting TTS playback status:', error);
+                    }
+                }, 500);
+            }
+
             return () => {
-                // Stop main audio if playing
+                // Cleanup function - wird ausgeführt wenn Component den Fokus verliert
+                // oder unmounted wird
+
+                // Nur pausieren, nicht stoppen, damit Position erhalten bleibt
                 if (isPlaying && sound) {
-                    stopSound();
+                    console.log('Focus lost - pausing main audio');
+                    sound.pauseAsync().catch((error) => {
+                        console.error('Error pausing sound on focus loss:', error);
+                    });
+                    setIsPlaying(false);
                 }
 
-                // Stop TTS audio if playing
                 if (isTtsPlaying && ttsSound) {
-                    stopTtsSound();
+                    console.log('Focus lost - pausing TTS audio');
+                    ttsSound.pauseAsync().catch((error) => {
+                        console.error('Error pausing TTS sound on focus loss:', error);
+                    });
+                    setIsTtsPlaying(false);
+                }
+
+                // Progress Intervals stoppen
+                if (progressIntervalRef.current) {
+                    clearInterval(progressIntervalRef.current);
+                    progressIntervalRef.current = null;
+                }
+
+                if (ttsProgressIntervalRef.current) {
+                    clearInterval(ttsProgressIntervalRef.current);
+                    ttsProgressIntervalRef.current = null;
                 }
             };
         }, [isPlaying, isTtsPlaying, sound, ttsSound])
@@ -127,7 +177,7 @@ export default function StoryDetailScreen() {
                 if (status.isLoaded) {
                     if (status.didJustFinish) {
                         setIsPlaying(false);
-                        setProgress(0);
+                        setProgress(1.0);
                         clearInterval(progressIntervalRef.current);
                         progressIntervalRef.current = null;
                     }
@@ -143,9 +193,17 @@ export default function StoryDetailScreen() {
     };
 
     const playSound = async () => {
-        // Stop TTS sound if it's playing
-        if (isTtsPlaying) {
-            await stopTtsSound();
+        console.log('playSound called');
+
+        // Stoppe TTS wenn es läuft
+        if (isTtsPlaying && ttsSound) {
+            console.log('Stopping TTS before playing main audio');
+            await ttsSound.pauseAsync();
+            setIsTtsPlaying(false);
+            if (ttsProgressIntervalRef.current) {
+                clearInterval(ttsProgressIntervalRef.current);
+                ttsProgressIntervalRef.current = null;
+            }
         }
 
         let currentSound = sound;
@@ -160,9 +218,12 @@ export default function StoryDetailScreen() {
                 // Check if the sound was paused - if so, resume from current position
                 if (!status.isPlaying && status.positionMillis > 0) {
                     await currentSound.playAsync();
+                    // Aktuellen Progress sofort setzen
+                    setProgress(status.positionMillis / status.durationMillis);
                 } else {
                     // If it's at the beginning or stopped, start from beginning
                     await currentSound.replayAsync();
+                    setProgress(0);
                 }
                 setIsPlaying(true);
 
@@ -172,14 +233,19 @@ export default function StoryDetailScreen() {
                 }
 
                 progressIntervalRef.current = setInterval(async () => {
-                    const status = await currentSound.getStatusAsync();
-                    if (status.isLoaded) {
-                        setProgress(status.positionMillis / status.durationMillis);
+                    try {
+                        const status = await currentSound.getStatusAsync();
+                        if (status.isLoaded && status.isPlaying) {
+                            setProgress(status.positionMillis / status.durationMillis);
+                        }
+                    } catch (error) {
+                        console.error('Error getting playback status:', error);
                     }
                 }, 500);
             }
         } catch (error) {
             console.error('Error playing sound:', error);
+            setIsPlaying(false);
         }
     };
 
@@ -234,7 +300,7 @@ export default function StoryDetailScreen() {
                 if (status.isLoaded) {
                     if (status.didJustFinish) {
                         setIsTtsPlaying(false);
-                        setTtsProgress(0);
+                        setTtsProgress(1.0);
                         clearInterval(ttsProgressIntervalRef.current);
                         ttsProgressIntervalRef.current = null;
                     }
@@ -249,11 +315,18 @@ export default function StoryDetailScreen() {
         }
     };
 
-    // Gleiche Logik für TTS-Sound
     const playTtsSound = async () => {
-        // Stop main audio if it's playing
-        if (isPlaying) {
-            await stopSound();
+        console.log('playTtsSound called');
+
+        // Stoppe main audio wenn es läuft
+        if (isPlaying && sound) {
+            console.log('Stopping main audio before playing TTS');
+            await sound.pauseAsync();
+            setIsPlaying(false);
+            if (progressIntervalRef.current) {
+                clearInterval(progressIntervalRef.current);
+                progressIntervalRef.current = null;
+            }
         }
 
         let currentTtsSound = ttsSound;
@@ -268,9 +341,12 @@ export default function StoryDetailScreen() {
                 // Check if the sound was paused - if so, resume from current position
                 if (!status.isPlaying && status.positionMillis > 0) {
                     await currentTtsSound.playAsync();
+                    // Aktuellen Progress sofort setzen
+                    setTtsProgress(status.positionMillis / status.durationMillis);
                 } else {
                     // If it's at the beginning or stopped, start from beginning
                     await currentTtsSound.replayAsync();
+                    setTtsProgress(0);
                 }
                 setIsTtsPlaying(true);
 
@@ -280,14 +356,19 @@ export default function StoryDetailScreen() {
                 }
 
                 ttsProgressIntervalRef.current = setInterval(async () => {
-                    const status = await currentTtsSound.getStatusAsync();
-                    if (status.isLoaded) {
-                        setTtsProgress(status.positionMillis / status.durationMillis);
+                    try {
+                        const status = await currentTtsSound.getStatusAsync();
+                        if (status.isLoaded && status.isPlaying) {
+                            setTtsProgress(status.positionMillis / status.durationMillis);
+                        }
+                    } catch (error) {
+                        console.error('Error getting TTS playback status:', error);
                     }
                 }, 500);
             }
         } catch (error) {
             console.error('Error playing TTS sound:', error);
+            setIsTtsPlaying(false);
         }
     };
 
@@ -368,8 +449,8 @@ export default function StoryDetailScreen() {
                     )}
 
                     {story.pdfUrl && (
-                        <TouchableOpacity 
-                            style={Styles.storyDetail.pdfButton} 
+                        <TouchableOpacity
+                            style={Styles.storyDetail.pdfButton}
                             onPress={openPDF}
                         >
                             <Text style={Styles.storyDetail.pdfButtonText}>
@@ -379,11 +460,28 @@ export default function StoryDetailScreen() {
                     )}
                 </View>
             </View>
+
             {story.audioUrl && (
                 <View style={Styles.storyDetail.audioContainer}>
                     <Text style={Styles.storyDetail.audioTitle}>Titellied</Text>
                     <View style={Styles.storyDetail.audioControls}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
+                            style={[
+                                Styles.storyDetail.audioButton,
+                                { backgroundColor: (!isPlaying && progress === 0) ? "#666" : "#b71c1c" }
+                            ]}
+
+                            onPress={stopSound}
+                            disabled={isLoading || (!isPlaying && progress === 0)}
+                        >
+                            <Ionicons
+                                name="stop"
+                                size={24}
+                                color={(!isPlaying && progress === 0) ? "#ccc" : "white"}
+                            />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
                             style={Styles.storyDetail.audioButton}
                             onPress={isPlaying ? pauseSound : playSound}
                             disabled={isLoading}
@@ -391,10 +489,10 @@ export default function StoryDetailScreen() {
                             {isLoading ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Ionicons 
-                                    name={isPlaying ? "pause" : "play"} 
-                                    size={24} 
-                                    color="white" 
+                                <Ionicons
+                                    name={isPlaying ? "pause" : "play"}
+                                    size={24}
+                                    color="white"
                                 />
                             )}
                         </TouchableOpacity>
@@ -403,7 +501,7 @@ export default function StoryDetailScreen() {
                             <View style={[Styles.storyDetail.progressBar, { width: `${progress * 100}%` }]} />
                         </View>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={Styles.storyDetail.downloadButton}
                             onPress={downloadAudio}
                         >
@@ -419,7 +517,7 @@ export default function StoryDetailScreen() {
             {story.videoUrl && (
                 <View style={Styles.storyDetail.videoContainer}>
                     <Text style={Styles.storyDetail.videoTitle}>Video</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={Styles.storyDetail.videoButton}
                         onPress={() => Linking.openURL(`${VIDEO_BASE_URL}/${story.videoUrl}`)}
                     >
@@ -435,7 +533,22 @@ export default function StoryDetailScreen() {
                 <View style={Styles.storyDetail.ttsFileContainer}>
                     <Text style={Styles.storyDetail.ttsFileTitle}>Vorlesen</Text>
                     <View style={Styles.storyDetail.audioControls}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
+                            style={[
+                                Styles.storyDetail.audioButton,
+                                { backgroundColor: (!isTtsPlaying && ttsProgress === 0) ? "#666" : "#b71c1c" }
+                            ]}
+                            onPress={stopTtsSound}
+                            disabled={isTtsLoading || (!isTtsPlaying && ttsProgress === 0)}
+                        >
+                            <Ionicons
+                                name="stop"
+                                size={24}
+                                color={(!isTtsPlaying && ttsProgress === 0) ? "#ccc" : "white"}
+                            />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
                             style={Styles.storyDetail.audioButton}
                             onPress={isTtsPlaying ? pauseTtsSound : playTtsSound}
                             disabled={isTtsLoading}
@@ -443,10 +556,10 @@ export default function StoryDetailScreen() {
                             {isTtsLoading ? (
                                 <ActivityIndicator color="white" />
                             ) : (
-                                <Ionicons 
-                                    name={isTtsPlaying ? "pause" : "play"} 
-                                    size={24} 
-                                    color="white" 
+                                <Ionicons
+                                    name={isTtsPlaying ? "pause" : "play"}
+                                    size={24}
+                                    color="white"
                                 />
                             )}
                         </TouchableOpacity>
@@ -455,7 +568,7 @@ export default function StoryDetailScreen() {
                             <View style={[Styles.storyDetail.progressBar, { width: `${ttsProgress * 100}%` }]} />
                         </View>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={Styles.storyDetail.downloadButton}
                             onPress={downloadTts}
                         >
@@ -501,8 +614,8 @@ export default function StoryDetailScreen() {
                     color: '#666',
                     textAlign: 'center'
                 }}>
-                    {currentRating > 0 
-                        ? `Deine Bewertung: ${currentRating} von 5 Sternen` 
+                    {currentRating > 0
+                        ? `Deine Bewertung: ${currentRating} von 5 Sternen`
                         : 'Tippe auf die Sterne, um zu bewerten'}
                 </Text>
             </View>
@@ -515,14 +628,14 @@ export default function StoryDetailScreen() {
                 onRequestClose={closeImageModal}
             >
                 <View style={Styles.storyDetail.modalContainer}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={Styles.storyDetail.closeButton}
                         onPress={closeImageModal}
                     >
                         <Ionicons name="close" size={24} color="black" />
                     </TouchableOpacity>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
                         onPress={closeImageModal}
                         activeOpacity={1}

@@ -285,6 +285,7 @@ const storyDetail = {
   audioButton: {
     backgroundColor: '#1d5264',
     borderRadius: 24,
+    marginRight: 10,
     width: 48,
     height: 48,
     justifyContent: 'center',
