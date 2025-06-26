@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, Image} from 'react-native';
+import {View, Text, TouchableOpacity, Image, Linking} from 'react-native';
 import {StatusBar} from 'expo-status-bar';
 import {useRouter} from 'expo-router';
 import { Styles } from '../constants/Styles';
@@ -14,6 +14,10 @@ export default function HomeScreen() {
     const logoWidth = screenWidth - (logoPadding * 2);
     const logoHeight = (screenHeight - 200) / 2; // Hälfte der vorherigen Höhe
 
+    const openFeedbackForm = () => {
+        Linking.openURL('https://docs.google.com/forms/d/e/1FAIpQLSe-8pTAj4FGGyvdIJUI683d8inR_8SjoCOBuVUvqUfqpMiY9A/viewform?usp=dialog');
+    };
+
     return (
         <View style={Styles.container.homeContainer}>
             <Text style={Styles.text.title}>
@@ -24,14 +28,16 @@ export default function HomeScreen() {
             </Text>
 
             <View style={Styles.container.logoContainer}>
-                <Image
-                    source={require('../assets/images/fabelfabrik_logo_test.png')}
-                    style={{
-                        width: logoWidth,
-                        height: logoHeight,
-                    }}
-                    resizeMode="contain"
-                />
+                <TouchableOpacity onPress={openFeedbackForm}>
+                    <Image
+                        source={require('../assets/images/fabelfabrik_logo_test.png')}
+                        style={{
+                            width: logoWidth,
+                            height: logoHeight,
+                        }}
+                        resizeMode="contain"
+                    />
+                </TouchableOpacity>
             </View>
 
             <View style={Styles.container.testnoteContainer}>
@@ -56,4 +62,3 @@ export default function HomeScreen() {
         </View>
     );
 }
-
