@@ -157,7 +157,13 @@ export default function StoryDetailScreen() {
         try {
             const status = await currentSound.getStatusAsync();
             if (status.isLoaded) {
-                await currentSound.playAsync();
+                // Check if the sound was paused - if so, resume from current position
+                if (!status.isPlaying && status.positionMillis > 0) {
+                    await currentSound.playAsync();
+                } else {
+                    // If it's at the beginning or stopped, start from beginning
+                    await currentSound.replayAsync();
+                }
                 setIsPlaying(true);
 
                 // Start tracking progress
@@ -243,6 +249,7 @@ export default function StoryDetailScreen() {
         }
     };
 
+    // Gleiche Logik für TTS-Sound
     const playTtsSound = async () => {
         // Stop main audio if it's playing
         if (isPlaying) {
@@ -258,7 +265,13 @@ export default function StoryDetailScreen() {
         try {
             const status = await currentTtsSound.getStatusAsync();
             if (status.isLoaded) {
-                await currentTtsSound.playAsync();
+                // Check if the sound was paused - if so, resume from current position
+                if (!status.isPlaying && status.positionMillis > 0) {
+                    await currentTtsSound.playAsync();
+                } else {
+                    // If it's at the beginning or stopped, start from beginning
+                    await currentTtsSound.replayAsync();
+                }
                 setIsTtsPlaying(true);
 
                 // Start tracking progress
