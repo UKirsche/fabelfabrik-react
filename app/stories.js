@@ -6,6 +6,7 @@ import { Styles } from '../constants/Styles';
 import { Colors } from '../constants/Colors';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useFavoriteStore } from '../store/favoriteStore';
+import { useBookmarkStore } from '../store/bookmarkStore';
 
 export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
@@ -18,14 +19,25 @@ export default function StoryListScreen() {
         favorites, 
         isFavorite, 
         toggleFavorite, 
-        initialize, 
+        initialize: initializeFavorites, 
         showOnlyFavorites, 
         toggleShowOnlyFavorites 
     } = useFavoriteStore();
 
-    // Initialize favorites from storage
+    // Access bookmark store
+    const {
+        bookmarks,
+        isBookmarked,
+        toggleBookmark,
+        initialize: initializeBookmarks,
+        showOnlyBookmarks,
+        toggleShowOnlyBookmarks
+    } = useBookmarkStore();
+
+    // Initialize favorites and bookmarks from storage
     useEffect(() => {
-        initialize();
+        initializeFavorites();
+        initializeBookmarks();
     }, []);
 
     // Function to sort stories based on current sort order
@@ -94,10 +106,16 @@ export default function StoryListScreen() {
             });
     }, []);
 
-    // Filter stories based on showOnlyFavorites state
-    const filteredStories = showOnlyFavorites
-        ? stories.filter(story => isFavorite(story.id || story._id))
-        : stories;
+    // Filter stories based on showOnlyFavorites and showOnlyBookmarks state
+    let filteredStories = stories;
+
+    if (showOnlyFavorites) {
+        filteredStories = filteredStories.filter(story => isFavorite(story.id || story._id));
+    }
+
+    if (showOnlyBookmarks) {
+        filteredStories = filteredStories.filter(story => isBookmarked(story.id || story._id));
+    }
 
 
     return (
@@ -105,11 +123,19 @@ export default function StoryListScreen() {
             {/* Filter and Sort Controls */}
             <View style={Styles.layout.filterContainer}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-                    <Button
-                        title={showOnlyFavorites ? "Alle anzeigen" : "Nur Favoriten"}
-                        onPress={toggleShowOnlyFavorites}
-                        color={Colors.light.brand}
-                    />
+                    <View style={{ flexDirection: 'row' }}>
+                        <Button
+                            title={showOnlyFavorites ? "Alle anzeigen" : "Nur Favoriten"}
+                            onPress={toggleShowOnlyFavorites}
+                            color={Colors.light.brand}
+                        />
+                        <View style={{ width: 10 }} />
+                        <Button
+                            title={showOnlyBookmarks ? "Alle anzeigen" : "Nur Gelesene"}
+                            onPress={toggleShowOnlyBookmarks}
+                            color={Colors.light.brand}
+                        />
+                    </View>
                     <TouchableOpacity 
                         onPress={toggleSortOrder}
                         style={{ 
@@ -163,16 +189,30 @@ export default function StoryListScreen() {
                                 </View>
                             </TouchableOpacity>
 
-                            {/* Favorite heart icon */}
-                            <TouchableOpacity
-                                onPress={() => toggleFavorite(item.id || item._id)}
-                                style={Styles.image.favoriteIcon}>
-                                <AntDesign
-                                    name={isFavorite(item.id || item._id) ? "heart" : "hearto"}
-                                    size={24}
-                                    color={isFavorite(item.id || item._id) ? "red" : "gray"}
-                                />
-                            </TouchableOpacity>
+                            {/* Icons container */}
+                            <View style={{ flexDirection: 'column', justifyContent: 'space-between', paddingVertical: 5 }}>
+                                {/* Favorite heart icon */}
+                                <TouchableOpacity
+                                    onPress={() => toggleFavorite(item.id || item._id)}
+                                    style={Styles.image.favoriteIcon}>
+                                    <AntDesign
+                                        name={isFavorite(item.id || item._id) ? "heart" : "hearto"}
+                                        size={24}
+                                        color={isFavorite(item.id || item._id) ? "red" : "gray"}
+                                    />
+                                </TouchableOpacity>
+
+                                {/* Bookmark icon */}
+                                <TouchableOpacity
+                                    onPress={() => toggleBookmark(item.id || item._id)}
+                                    style={Styles.image.favoriteIcon}>
+                                    <MaterialIcons
+                                        name={isBookmarked(item.id || item._id) ? "bookmark" : "bookmark-outline"}
+                                        size={24}
+                                        color={isBookmarked(item.id || item._id) ? "#ba9425" : "gray"}
+                                    />
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     )}
                 />

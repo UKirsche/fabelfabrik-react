@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
 import { Styles } from '../../constants/Styles';
 import { useRatingStore } from '../../store/ratingStore';
+import { useBookmarkStore } from '../../store/bookmarkStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -24,6 +25,9 @@ export default function StoryDetailScreen() {
     // Rating state and functions
     const { initialize: initializeRatings, getRating, setRating } = useRatingStore();
     const [currentRating, setCurrentRating] = useState(0);
+
+    // Bookmark state and functions
+    const { initialize: initializeBookmarks, markAsRead } = useBookmarkStore();
 
     // TTS state variables
     const [ttsSound, setTtsSound] = useState(null);
@@ -44,7 +48,14 @@ export default function StoryDetailScreen() {
             setCurrentRating(rating);
         };
 
+        // Initialize bookmarks and mark story as read
+        const loadBookmarks = async () => {
+            await initializeBookmarks();
+            await markAsRead(id);
+        };
+
         loadRatings();
+        loadBookmarks();
 
         // Cleanup function to unload sound when component unmounts
         return () => {
