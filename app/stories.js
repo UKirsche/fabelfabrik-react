@@ -125,13 +125,13 @@ export default function StoryListScreen() {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
                     <View style={{ flexDirection: 'row' }}>
                         <Button
-                            title={showOnlyFavorites ? "Alle anzeigen" : "Nur Favoriten"}
+                            title={showOnlyFavorites ? "Alle" : "Favoriten"}
                             onPress={toggleShowOnlyFavorites}
                             color={Colors.light.brand}
                         />
                         <View style={{ width: 10 }} />
                         <Button
-                            title={showOnlyBookmarks ? "Alle anzeigen" : "Nur Gelesene"}
+                            title={showOnlyBookmarks ? "Alle" : "Gelesen"}
                             onPress={toggleShowOnlyBookmarks}
                             color={Colors.light.brand}
                         />
@@ -148,7 +148,7 @@ export default function StoryListScreen() {
                         }}
                     >
                         <Text style={{ color: 'white', marginRight: 5 }}>
-                            {sortOrder === 'desc' ? "Neueste zuerst" : "Älteste zuerst"}
+                            {sortOrder === 'desc' ? "Neu" : "Alt"}
                         </Text>
                         <MaterialIcons 
                             name={sortOrder === 'desc' ? "arrow-downward" : "arrow-upward"} 
