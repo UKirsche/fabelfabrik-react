@@ -1,33 +1,46 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, Linking, ActivityIndicator, Modal, Dimensions } from 'react-native';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
-import { Audio } from 'expo-av';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
+import {
+    View,
+    Text,
+    ScrollView,
+    Image,
+    TouchableOpacity,
+    Linking,
+    ActivityIndicator,
+    Modal,
+    Dimensions,
+    FlatList
+} from 'react-native';
+import {useLocalSearchParams, useNavigation} from 'expo-router';
+import {useFocusEffect} from '@react-navigation/native';
+import {Audio} from 'expo-av';
 import * as Speech from 'expo-speech';
-import { Ionicons } from '@expo/vector-icons';
-import { API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL } from '../../config';
-import { Styles } from '../../constants/Styles';
-import { useRatingStore } from '../../store/ratingStore';
-import { useBookmarkStore } from '../../store/bookmarkStore';
+import {Ionicons} from '@expo/vector-icons';
+import {API_BASE_URL, IMAGES_BASE_URL, PDF_BASE_URL, AUDIO_BASE_URL, VIDEO_BASE_URL} from '../../config';
+import {Styles} from '../../constants/Styles';
+import {useRatingStore} from '../../store/ratingStore';
+import {useBookmarkStore} from '../../store/bookmarkStore';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 export default function StoryDetailScreen() {
-    const { id } = useLocalSearchParams();
+    const {id} = useLocalSearchParams();
     const [story, setStory] = useState(null);
     const [sound, setSound] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [imageModalVisible, setImageModalVisible] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const carouselRef = useRef(null);
     const progressIntervalRef = useRef(null);
 
     // Rating state and functions
-    const { initialize: initializeRatings, getRating, setRating } = useRatingStore();
+    const {initialize: initializeRatings, getRating, setRating} = useRatingStore();
     const [currentRating, setCurrentRating] = useState(0);
 
     // Bookmark state and functions
-    const { initialize: initializeBookmarks, markAsRead } = useBookmarkStore();
+    const {initialize: initializeBookmarks, markAsRead} = useBookmarkStore();
 
     // TTS state variables
     const [ttsSound, setTtsSound] = useState(null);
@@ -159,13 +172,77 @@ export default function StoryDetailScreen() {
         }
     };
 
-    const openImageModal = () => {
+    const openImageModal = (index = 0) => {
+        setCurrentImageIndex(index);
         setImageModalVisible(true);
     };
 
     const closeImageModal = () => {
         setImageModalVisible(false);
     };
+
+    // Combine cover image and other images into a single array for the carousel
+    const getAllImages = () => {
+        const allImages = [];
+
+        // Add cover image if it exists
+        if (story.coverImageUrl) {
+            allImages.push(`${IMAGES_BASE_URL}/${story.coverImageUrl}`);
+        }
+
+        // Add other images if they exist
+        if (story.images && story.images.length > 0) {
+            // Check if images are already full URLs or need base URL
+            story.images.forEach(img => {
+                if (img.startsWith('http')) {
+                    allImages.push(img);
+                } else {
+                    allImages.push(`${IMAGES_BASE_URL}/${img}`);
+                }
+            });
+        }
+
+        return allImages;
+    };
+
+    // Navigate to the next image in the carousel
+    const goToNextImage = () => {
+        const allImages = getAllImages();
+        if (allImages.length > 1) {
+            const newIndex = (currentImageIndex + 1) % allImages.length;
+            setCurrentImageIndex(newIndex);
+            carouselRef.current?.scrollToIndex({index: newIndex, animated: true});
+        }
+    };
+
+    // Navigate to the previous image in the carousel
+    const goToPrevImage = () => {
+        const allImages = getAllImages();
+        if (allImages.length > 1) {
+            const newIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+            setCurrentImageIndex(newIndex);
+            carouselRef.current?.scrollToIndex({index: newIndex, animated: true});
+        }
+    };
+
+// Render a single carousel item
+    const renderCarouselItem = ({item, index}) => (
+        <TouchableOpacity
+            onPress={() => openImageModal(index)}
+            style={{width: 120, alignItems: 'center'}}
+        >
+            <Image
+                source={{uri: item}}
+                style={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 8,
+                    marginVertical: 10
+                }}
+                resizeMode="cover"
+            />
+        </TouchableOpacity>
+    );
 
     const loadSound = async () => {
         try {
@@ -175,9 +252,9 @@ export default function StoryDetailScreen() {
                 await sound.unloadAsync();
             }
 
-            const { sound: newSound } = await Audio.Sound.createAsync(
-                { uri: `${AUDIO_BASE_URL}/${story.audioUrl}` },
-                { shouldPlay: false }
+            const {sound: newSound} = await Audio.Sound.createAsync(
+                {uri: `${AUDIO_BASE_URL}/${story.audioUrl}`},
+                {shouldPlay: false}
             );
 
             setSound(newSound);
@@ -298,9 +375,9 @@ export default function StoryDetailScreen() {
                 await ttsSound.unloadAsync();
             }
 
-            const { sound: newTtsSound } = await Audio.Sound.createAsync(
-                { uri: `${AUDIO_BASE_URL}/${story.ttsUrl}` },
-                { shouldPlay: false }
+            const {sound: newTtsSound} = await Audio.Sound.createAsync(
+                {uri: `${AUDIO_BASE_URL}/${story.ttsUrl}`},
+                {shouldPlay: false}
             );
 
             setTtsSound(newTtsSound);
@@ -419,14 +496,14 @@ export default function StoryDetailScreen() {
     };
 
     // Star Rating component
-    const StarRating = ({ rating, onRatingChange, size = 24, color = "#FFD700" }) => {
+    const StarRating = ({rating, onRatingChange, size = 24, color = "#FFD700"}) => {
         return (
-            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+            <View style={{flexDirection: 'row', justifyContent: 'center'}}>
                 {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity
                         key={star}
                         onPress={() => onRatingChange(star)}
-                        style={{ padding: 5 }}
+                        style={{padding: 5}}
                     >
                         <Ionicons
                             name={rating >= star ? "star" : "star-outline"}
@@ -444,15 +521,97 @@ export default function StoryDetailScreen() {
             <Text style={Styles.storyDetail.title}>{story.title}</Text>
 
             <View style={Styles.storyDetail.mediaContainer}>
-                {story.coverImageUrl && (
-                    <TouchableOpacity onPress={openImageModal}>
-                        <Image
-                            source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
-                            style={Styles.storyDetail.coverImage}
-                            resizeMode="cover"
-                        />
-                    </TouchableOpacity>
-                )}
+                {getAllImages().length > 0 ? (
+                    <View style={{ width: 120, marginRight: 16 }}>
+                        <View style={{ position: 'relative' }}>
+                            <FlatList
+                                ref={carouselRef}
+                                data={getAllImages()}
+                                renderItem={renderCarouselItem}
+                                keyExtractor={(item, index) => `image-${index}`}
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                onMomentumScrollEnd={(event) => {
+                                    const newIndex = Math.floor(
+                                        event.nativeEvent.contentOffset.x / 120
+                                    );
+                                    setCurrentImageIndex(newIndex);
+                                }}
+                                initialScrollIndex={currentImageIndex}
+                                getItemLayout={(data, index) => ({
+                                    length: 120,
+                                    offset: 120 * index,
+                                    index,
+                                })}
+                                contentContainerStyle={{ paddingVertical: 10 }}
+                            />
+
+                            {/* Navigation arrows - positioned over the thumbnail */}
+                            {getAllImages().length > 1 && (
+                                <View style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    position: 'absolute',
+                                    width: 100,
+                                    top: '50%',
+                                    left: 10,
+                                    transform: [{ translateY: -15 }]
+                                }}>
+                                    <TouchableOpacity
+                                        onPress={goToPrevImage}
+                                        style={{
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            borderRadius: 15,
+                                            width: 20,
+                                            height: 20,
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Ionicons name="chevron-back" size={12} color="white" />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        onPress={goToNextImage}
+                                        style={{
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            borderRadius: 15,
+                                            width: 20,
+                                            height: 20,
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Ionicons name="chevron-forward" size={12} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Pagination dots - positioned under the thumbnail */}
+                        {getAllImages().length > 1 && (
+                            <View style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                marginTop: 8
+                            }}>
+                                {getAllImages().map((_, index) => (
+                                    <View
+                                        key={`dot-${index}`}
+                                        style={{
+                                            width: 6,
+                                            height: 6,
+                                            borderRadius: 3,
+                                            backgroundColor: index === currentImageIndex ? '#1d5264' : '#ccc',
+                                            marginHorizontal: 2
+                                        }}
+                                    />
+                                ))}
+                            </View>
+                        )}
+                    </View>
+                ) : null}
 
                 <View style={Styles.storyDetail.mediaContent}>
                     {story.description && (
@@ -479,7 +638,7 @@ export default function StoryDetailScreen() {
                         <TouchableOpacity
                             style={[
                                 Styles.storyDetail.audioButton,
-                                { backgroundColor: (!isPlaying && progress === 0) ? "#666" : "#b71c1c" }
+                                {backgroundColor: (!isPlaying && progress === 0) ? "#666" : "#b71c1c"}
                             ]}
 
                             onPress={stopSound}
@@ -498,7 +657,7 @@ export default function StoryDetailScreen() {
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <ActivityIndicator color="white" />
+                                <ActivityIndicator color="white"/>
                             ) : (
                                 <Ionicons
                                     name={isPlaying ? "pause" : "play"}
@@ -509,7 +668,7 @@ export default function StoryDetailScreen() {
                         </TouchableOpacity>
 
                         <View style={Styles.storyDetail.progressContainer}>
-                            <View style={[Styles.storyDetail.progressBar, { width: `${progress * 100}%` }]} />
+                            <View style={[Styles.storyDetail.progressBar, {width: `${progress * 100}%`}]}/>
                         </View>
 
                         <TouchableOpacity
@@ -517,7 +676,7 @@ export default function StoryDetailScreen() {
                             onPress={downloadAudio}
                         >
                             <Text style={Styles.storyDetail.downloadButtonText}>
-                                <Ionicons name="download-outline" size={16} color="white" /> MP3
+                                <Ionicons name="download-outline" size={16} color="white"/> MP3
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -533,7 +692,7 @@ export default function StoryDetailScreen() {
                         onPress={() => Linking.openURL(`${VIDEO_BASE_URL}/${story.videoUrl}`)}
                     >
                         <Text style={Styles.storyDetail.videoButtonText}>
-                            <Ionicons name="videocam-outline" size={16} color="white" /> Video abspielen
+                            <Ionicons name="videocam-outline" size={16} color="white"/> Video abspielen
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -547,7 +706,7 @@ export default function StoryDetailScreen() {
                         <TouchableOpacity
                             style={[
                                 Styles.storyDetail.audioButton,
-                                { backgroundColor: (!isTtsPlaying && ttsProgress === 0) ? "#666" : "#b71c1c" }
+                                {backgroundColor: (!isTtsPlaying && ttsProgress === 0) ? "#666" : "#b71c1c"}
                             ]}
                             onPress={stopTtsSound}
                             disabled={isTtsLoading || (!isTtsPlaying && ttsProgress === 0)}
@@ -565,7 +724,7 @@ export default function StoryDetailScreen() {
                             disabled={isTtsLoading}
                         >
                             {isTtsLoading ? (
-                                <ActivityIndicator color="white" />
+                                <ActivityIndicator color="white"/>
                             ) : (
                                 <Ionicons
                                     name={isTtsPlaying ? "pause" : "play"}
@@ -576,7 +735,7 @@ export default function StoryDetailScreen() {
                         </TouchableOpacity>
 
                         <View style={Styles.storyDetail.progressContainer}>
-                            <View style={[Styles.storyDetail.progressBar, { width: `${ttsProgress * 100}%` }]} />
+                            <View style={[Styles.storyDetail.progressBar, {width: `${ttsProgress * 100}%`}]}/>
                         </View>
 
                         <TouchableOpacity
@@ -584,18 +743,13 @@ export default function StoryDetailScreen() {
                             onPress={downloadTts}
                         >
                             <Text style={Styles.storyDetail.downloadButtonText}>
-                                <Ionicons name="download-outline" size={16} color="white" /> MP3
+                                <Ionicons name="download-outline" size={16} color="white"/> MP3
                             </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             )}
 
-            {story.images && story.images.length > 0 &&
-                story.images.map((img, i) => (
-                    <Image key={i} source={{ uri: img }} style={{ width: '100%', height: 200, marginVertical: 8 }} />
-                ))
-            }
 
             {/* Rating Section */}
             <View style={{
@@ -643,21 +797,85 @@ export default function StoryDetailScreen() {
                         style={Styles.storyDetail.closeButton}
                         onPress={closeImageModal}
                     >
-                        <Ionicons name="close" size={24} color="black" />
+                        <Ionicons name="close" size={24} color="black"/>
                     </TouchableOpacity>
 
+                    {/* Previous button */}
+                    {getAllImages().length > 1 && (
+                        <TouchableOpacity
+                            style={{
+                                position: 'absolute',
+                                left: 20,
+                                top: '50%',
+                                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                                borderRadius: 25,
+                                width: 50,
+                                height: 50,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                zIndex: 10
+                            }}
+                            onPress={() => {
+                                const newIndex = (currentImageIndex - 1 + getAllImages().length) % getAllImages().length;
+                                setCurrentImageIndex(newIndex);
+                            }}
+                        >
+                            <Ionicons name="chevron-back" size={30} color="black"/>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Next button */}
+                    {getAllImages().length > 1 && (
+                        <TouchableOpacity
+                            style={{
+                                position: 'absolute',
+                                right: 20,
+                                top: '50%',
+                                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                                borderRadius: 25,
+                                width: 50,
+                                height: 50,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                zIndex: 10
+                            }}
+                            onPress={() => {
+                                const newIndex = (currentImageIndex + 1) % getAllImages().length;
+                                setCurrentImageIndex(newIndex);
+                            }}
+                        >
+                            <Ionicons name="chevron-forward" size={30} color="black"/>
+                        </TouchableOpacity>
+                    )}
+
                     <TouchableOpacity
-                        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+                        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
                         onPress={closeImageModal}
                         activeOpacity={1}
                     >
-                        {story.coverImageUrl && (
+                        {getAllImages().length > 0 && (
                             <Image
-                                source={{ uri: `${IMAGES_BASE_URL}/${story.coverImageUrl}` }}
+                                source={{uri: getAllImages()[currentImageIndex]}}
                                 style={Styles.storyDetail.modalImage}
                             />
                         )}
                     </TouchableOpacity>
+
+                    {/* Image counter */}
+                    {getAllImages().length > 1 && (
+                        <View style={{
+                            position: 'absolute',
+                            bottom: 30,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            paddingHorizontal: 15,
+                            paddingVertical: 8,
+                            borderRadius: 20
+                        }}>
+                            <Text style={{color: 'white', fontWeight: 'bold'}}>
+                                {currentImageIndex + 1} / {getAllImages().length}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </Modal>
         </ScrollView>
