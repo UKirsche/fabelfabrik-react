@@ -114,7 +114,7 @@ export default function StoryListScreen() {
     }
 
     if (showOnlyBookmarks) {
-        filteredStories = filteredStories.filter(story => isBookmarked(story.id || story._id));
+        filteredStories = filteredStories.filter(story => !isBookmarked(story.id || story._id));
     }
 
 
@@ -131,7 +131,7 @@ export default function StoryListScreen() {
                         />
                         <View style={{ width: 10 }} />
                         <Button
-                            title={showOnlyBookmarks ? "Alle" : "Gelesen"}
+                            title={showOnlyBookmarks ? "Alle" : "Ungelesen"}
                             onPress={toggleShowOnlyBookmarks}
                             color={Colors.light.brand}
                         />
