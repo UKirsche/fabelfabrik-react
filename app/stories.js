@@ -12,6 +12,7 @@ export default function StoryListScreen() {
     const [stories, setStories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [sortOrder, setSortOrder] = useState('desc'); // 'desc' for newest first, 'asc' for oldest first
+    const [activeFilter, setActiveFilter] = useState(null); // 'favorites', 'unread', or null
     const router = useRouter();
 
     // Access favorite store
@@ -19,9 +20,7 @@ export default function StoryListScreen() {
         favorites, 
         isFavorite, 
         toggleFavorite, 
-        initialize: initializeFavorites, 
-        showOnlyFavorites, 
-        toggleShowOnlyFavorites 
+        initialize: initializeFavorites
     } = useFavoriteStore();
 
     // Access bookmark store
@@ -29,9 +28,7 @@ export default function StoryListScreen() {
         bookmarks,
         isBookmarked,
         toggleBookmark,
-        initialize: initializeBookmarks,
-        showOnlyBookmarks,
-        toggleShowOnlyBookmarks
+        initialize: initializeBookmarks
     } = useBookmarkStore();
 
     // Initialize favorites and bookmarks from storage
@@ -63,6 +60,11 @@ export default function StoryListScreen() {
         setSortOrder(newSortOrder);
         // Re-sort the stories with the new sort order
         setStories(sortStories(stories));
+    };
+
+    // Central filter toggle function
+    const toggleFilter = (filterType) => {
+        setActiveFilter(activeFilter === filterType ? null : filterType);
     };
 
     useEffect(() => {
@@ -106,17 +108,14 @@ export default function StoryListScreen() {
             });
     }, []);
 
-    // Filter stories based on showOnlyFavorites and showOnlyBookmarks state
+    // Filter stories based on activeFilter state
     let filteredStories = stories;
 
-    if (showOnlyFavorites) {
+    if (activeFilter === 'favorites') {
         filteredStories = filteredStories.filter(story => isFavorite(story.id || story._id));
-    }
-
-    if (showOnlyBookmarks) {
+    } else if (activeFilter === 'unread') {
         filteredStories = filteredStories.filter(story => !isBookmarked(story.id || story._id));
     }
-
 
     return (
         <View style={Styles.container.padded}>
@@ -125,14 +124,14 @@ export default function StoryListScreen() {
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
                     <View style={{ flexDirection: 'row' }}>
                         <Button
-                            title={showOnlyFavorites ? "Alle" : "Favoriten"}
-                            onPress={toggleShowOnlyFavorites}
+                            title={activeFilter === 'favorites' ? "Alle" : "Favoriten"}
+                            onPress={() => toggleFilter('favorites')}
                             color={Colors.light.brand}
                         />
                         <View style={{ width: 10 }} />
                         <Button
-                            title={showOnlyBookmarks ? "Alle" : "Ungelesen"}
-                            onPress={toggleShowOnlyBookmarks}
+                            title={activeFilter === 'unread' ? "Alle" : "Ungelesen"}
+                            onPress={() => toggleFilter('unread')}
                             color={Colors.light.brand}
                         />
                     </View>
